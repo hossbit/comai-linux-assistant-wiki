@@ -53,6 +53,12 @@ systemctl --user status comai-localai.service
 curl -s http://127.0.0.1:11435/v1/models | jq -r '.data[].id'
 ```
 
+If this command prints no model IDs, add one or more `.gguf` model files to:
+
+```bash
+~/ai/models
+```
+
 ## Config Values
 
 ```yaml
@@ -82,6 +88,18 @@ Or use another provider:
 ```bash
 comai ollama hi
 comai gpt hi
+```
+
+If you see:
+
+```text
+LocalAI is running, but the configured model was not found
+```
+
+Add the matching `.gguf` file to `~/ai/models`, or edit `model:` in:
+
+```bash
+~/localcomai/config/comai.yaml
 ```
 
 <div align="center">

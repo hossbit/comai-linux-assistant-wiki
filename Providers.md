@@ -48,6 +48,9 @@ Check local models:
 curl -s http://127.0.0.1:11435/v1/models | jq -r '.data[].id'
 ```
 
+Local mode uses the `model:` value from `~/localcomai/config/comai.yaml`.
+That model must exist as a `.gguf` file in `~/ai/models`.
+
 Run a local request:
 
 ```bash

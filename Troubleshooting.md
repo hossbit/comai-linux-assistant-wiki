@@ -53,6 +53,29 @@ Check models:
 curl -s http://127.0.0.1:11435/v1/models | jq -r '.data[].id'
 ```
 
+## Configured Local Model Was Not Found
+
+If ComAI says the configured model was not found, LocalAI is running but the
+model in `~/localcomai/config/comai.yaml` is not available from LocalAI.
+
+Check installed local models:
+
+```bash
+curl -s http://127.0.0.1:11435/v1/models | jq -r '.data[].id'
+```
+
+Add the matching `.gguf` model file to:
+
+```bash
+~/ai/models
+```
+
+Or edit the configured model name:
+
+```bash
+~/localcomai/config/comai.yaml
+```
+
 ## Ollama Cannot Be Reached
 
 Make sure Ollama is running, then check:
