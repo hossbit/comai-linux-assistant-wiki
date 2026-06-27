@@ -81,3 +81,7 @@ git clone https://github.com/hossbit/comai-linux-assistant.wiki.git
 ```
 
 Copy the files from this local `wiki/` directory into that cloned wiki repo, then commit and push.
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>

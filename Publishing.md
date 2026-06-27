@@ -79,3 +79,7 @@ Local-AI-Service.md
 ```
 
 The `_Sidebar.md` file becomes the wiki sidebar automatically.
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>

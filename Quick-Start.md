@@ -72,3 +72,6 @@ comai --api-base=http://127.0.0.1:11435/v1 hi
 comai gpt --api-base=https://api.openai.com/v1 hi
 ```
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>

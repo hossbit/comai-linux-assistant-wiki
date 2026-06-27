@@ -13,3 +13,6 @@ Start here:
 
 These Markdown pages are also compatible with GitHub Wiki publishing. The `_Sidebar.md` file is used automatically by GitHub Wiki.
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>

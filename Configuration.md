@@ -92,3 +92,6 @@ export OPENAI_API_KEY="your_api_key"
 
 Avoid committing a real key into git. If you store a key in `~/localcomai/config/comai.yaml`, keep that installed config private.
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>
