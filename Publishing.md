@@ -26,6 +26,7 @@ After that, the wiki repository will contain:
 
 ```text
 Home.md
+README.md
 _Sidebar.md
 Installation.md
 Quick-Start.md
