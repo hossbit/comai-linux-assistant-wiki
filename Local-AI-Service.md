@@ -15,6 +15,13 @@ Local mode expects an OpenAI-compatible API server running from:
 
 The recommended companion project is `hossbit/localai`.
 
+If you install LocalAI into a custom directory, pass that path when installing
+ComAI:
+
+```bash
+./scripts/install.sh --ai-dir ~/myai
+```
+
 ## Start Local AI
 
 Using the user service:
@@ -27,6 +34,12 @@ Manual start:
 
 ```bash
 ~/ai/start.sh
+```
+
+For a custom LocalAI directory:
+
+```bash
+~/myai/start.sh
 ```
 
 ## Stop Local AI
@@ -58,6 +71,8 @@ If this command prints no model IDs, add one or more `.gguf` model files to:
 ```bash
 ~/ai/models
 ```
+
+For a custom LocalAI directory, use that directory's `models` folder instead.
 
 ## Config Values
 
@@ -101,6 +116,9 @@ Add the matching `.gguf` file to `~/ai/models`, or edit `model:` in:
 ```bash
 ~/localcomai/config/comai.yaml
 ```
+
+For a custom LocalAI directory, add the model to that directory's `models`
+folder.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">

@@ -46,10 +46,28 @@ The installer:
 
 ## Custom Install Directory
 
-Use `COMAI_INSTALL_DIR` for a non-default location:
+Use `--dir` for a non-default ComAI app location:
+
+```bash
+./scripts/install.sh --dir ~/aiass
+```
+
+If LocalAI is installed somewhere other than `~/ai`, pass that path with
+`--ai-dir` so ComAI writes the correct `ai_dir` value before it creates and
+starts the service:
+
+```bash
+./scripts/install.sh --dir ~/aiass --ai-dir ~/myai
+```
+
+Environment variables are also supported:
 
 ```bash
 COMAI_INSTALL_DIR="$HOME/apps/comai" ./scripts/install.sh
+```
+
+```bash
+COMAI_AI_DIR="$HOME/myai" ./scripts/install.sh
 ```
 
 ## PATH Setup

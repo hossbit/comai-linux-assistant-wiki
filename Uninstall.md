@@ -18,6 +18,12 @@ ComAI includes an uninstaller that removes ComAI-managed user files and leaves u
 If you installed to a custom directory:
 
 ```bash
+~/aiass/scripts/uninstall.sh --dir ~/aiass
+```
+
+Environment variables are also supported:
+
+```bash
 COMAI_INSTALL_DIR="$HOME/apps/comai" "$HOME/apps/comai/scripts/uninstall.sh"
 ```
 
@@ -35,7 +41,7 @@ The uninstaller removes items only when they look managed by ComAI:
 The uninstaller does not remove:
 
 - the source checkout
-- `~/ai`
+- your LocalAI install, usually `~/ai`
 - files that do not look managed by ComAI
 - command wrappers that point somewhere else
 
@@ -57,7 +63,9 @@ ComAI and localai are separate pieces. Removing ComAI does not delete:
 ~/ai
 ```
 
-This is intentional so your local models and local AI setup are preserved.
+If your LocalAI install is somewhere else, the uninstaller reports that path in
+its final summary. This is intentional so your local models and local AI setup
+are preserved.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
