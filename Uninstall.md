@@ -1,10 +1,9 @@
 # Uninstall
 
 <div align="center">
-
-![Uninstall](https://img.shields.io/badge/Uninstall-safe%20checks-red)
-![User Files](https://img.shields.io/badge/User%20space-only-blue)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 ComAI includes an uninstaller that removes ComAI-managed user files and leaves unrelated paths untouched.

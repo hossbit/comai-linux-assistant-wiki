@@ -1,18 +1,13 @@
 # ComAI Linux Assistant Wiki
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 <div align="center">
-
-![Linux](https://img.shields.io/badge/Linux-Ubuntu%20%7C%20Fedora-orange)
-![Bash](https://img.shields.io/badge/Bash-shell-4EAA25)
-![Local AI](https://img.shields.io/badge/Local%20AI-llama.cpp-blue)
-![Ollama](https://img.shields.io/badge/Ollama-supported-black)
-![OpenAI](https://img.shields.io/badge/OpenAI-compatible-10A37F)
-![License](https://img.shields.io/badge/license-MIT-green)
-
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
 </div>
 
 ComAI Linux Assistant is an open-source Linux terminal assistant written in Bash. It helps you ask Linux questions, explain commands, inspect files, scan logs for errors, and talk to local or cloud AI models without leaving your shell.

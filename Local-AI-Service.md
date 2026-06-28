@@ -1,10 +1,9 @@
 # Local AI Service
 
 <div align="center">
-
-![Service](https://img.shields.io/badge/systemd-user%20service-blue)
-![Local](https://img.shields.io/badge/Local%20AI-OpenAI%20compatible-green)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 Local mode expects an OpenAI-compatible API server running from:

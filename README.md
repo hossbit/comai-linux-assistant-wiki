@@ -1,5 +1,11 @@
 # ComAI Linux Assistant Wiki
 
+<div align="center">
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
+</div>
+
 Documentation repository for [hossbit/comai-linux-assistant](https://github.com/hossbit/comai-linux-assistant).
 
 Start here:

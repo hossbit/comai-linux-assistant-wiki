@@ -1,11 +1,9 @@
 # Installation
 
 <div align="center">
-
-![Linux](https://img.shields.io/badge/Linux-supported-orange)
-![Bash](https://img.shields.io/badge/Shell-Bash-4EAA25)
-![Install](https://img.shields.io/badge/Install-user%20space-blue)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 ComAI installs as a user-space command-line tool. The default app directory is `~/localcomai`, and command wrappers are created in `~/.local/bin`.

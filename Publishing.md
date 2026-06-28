@@ -1,10 +1,9 @@
 # Publishing the Wiki
 
 <div align="center">
-
-![GitHub Wiki](https://img.shields.io/badge/GitHub-Wiki-181717)
-![Markdown](https://img.shields.io/badge/Markdown-ready-blue)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 This `wiki/` directory is ready for the `hossbit/comai-linux-assistant` project and can be published in either of two ways:

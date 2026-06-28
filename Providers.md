@@ -1,11 +1,9 @@
 # Providers
 
 <div align="center">
-
-![Local AI](https://img.shields.io/badge/Provider-local%20AI-blue)
-![Ollama](https://img.shields.io/badge/Provider-Ollama-black)
-![OpenAI](https://img.shields.io/badge/Provider-OpenAI-10A37F)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 ComAI supports three provider modes: local AI, Ollama, and OpenAI-compatible APIs.

@@ -1,10 +1,9 @@
 # Quick Start
 
 <div align="center">
-
-![Terminal](https://img.shields.io/badge/Terminal-ready-111111)
-![Commands](https://img.shields.io/badge/Commands-explain%20%7C%20analyze%20%7C%20chat-blue)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 This page gives practical examples you can copy into a terminal.

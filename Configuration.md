@@ -1,10 +1,9 @@
 # Configuration
 
 <div align="center">
-
-![YAML](https://img.shields.io/badge/Config-YAML-blue)
-![Env](https://img.shields.io/badge/Overrides-environment-green)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 ComAI reads defaults from its YAML config and allows one-off overrides from command flags or environment variables.

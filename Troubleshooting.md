@@ -1,10 +1,9 @@
 # Troubleshooting
 
 <div align="center">
-
-![Help](https://img.shields.io/badge/Troubleshooting-common%20fixes-blue)
-![Logs](https://img.shields.io/badge/Logs-check%20first-red)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 ## `comai` Command Not Found

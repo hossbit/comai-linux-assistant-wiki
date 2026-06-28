@@ -1,10 +1,9 @@
 # FAQ
 
 <div align="center">
-
-![FAQ](https://img.shields.io/badge/FAQ-ComAI-blue)
-![Linux](https://img.shields.io/badge/Linux-terminal-orange)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 ## Is ComAI only for Linux?

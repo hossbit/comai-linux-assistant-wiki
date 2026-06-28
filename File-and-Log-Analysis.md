@@ -1,11 +1,9 @@
 # File and Log Analysis
 
 <div align="center">
-
-![Files](https://img.shields.io/badge/Files--f%20supported-blue)
-![Logs](https://img.shields.io/badge/Logs-error%20scan-red)
-![Config](https://img.shields.io/badge/Configs-review-green)
-
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
+  </a>
 </div>
 
 ComAI can include file content in the prompt with `-f`, `--file`, or `--files`.
