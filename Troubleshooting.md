@@ -9,7 +9,6 @@
 ## First Check
 
 ```bash
-comai check
 comai status
 comai provider
 comai models

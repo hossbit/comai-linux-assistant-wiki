@@ -82,7 +82,6 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ```bash
 comai --help
-comai check
 comai status
 comai explain chmod 755
 ```

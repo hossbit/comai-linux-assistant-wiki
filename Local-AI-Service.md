@@ -50,7 +50,6 @@ If the service file is not installed, ComAI falls back to:
 ## Check Status
 
 ```bash
-comai check
 comai status local
 comai provider
 comai models local

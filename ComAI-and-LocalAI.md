@@ -54,7 +54,6 @@ After installing ComAI, local provider status may fail until a local server is
 running. That is normal.
 
 ```bash
-comai check
 comai status
 ```
 
@@ -80,7 +79,7 @@ Then point ComAI at the model name without `.gguf`:
 comai config set provider local
 comai config set local_api_base http://127.0.0.1:11435
 comai config set local_model Qwen2.5-Coder-7B-Instruct-Q2_K
-comai check
+comai status
 ```
 
 ### LocalAI First, ComAI Later
@@ -115,7 +114,7 @@ Set the matching model in ComAI:
 ```bash
 comai config set provider local
 comai config set local_model MODEL_NAME_WITHOUT_GGUF
-comai check
+comai status
 ```
 
 ## Optional ComAI Helper Service
@@ -190,7 +189,6 @@ ComAI:
 
 ```bash
 comai version
-comai check
 comai status
 comai provider
 comai models local

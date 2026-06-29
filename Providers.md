@@ -15,7 +15,6 @@ llama.cpp server, or any other local API that exposes OpenAI-compatible
 ## Status And Models
 
 ```bash
-comai check
 comai status
 comai provider
 comai models

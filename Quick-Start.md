@@ -11,14 +11,13 @@ Practical commands you can copy into a terminal.
 ## Check Setup
 
 ```bash
-comai check
 comai status
 comai provider
 comai models
 ```
 
-`check` tests the active provider only. `status` shows local, Ollama, and
-OpenAI provider connections. The active provider is marked with `(active)`.
+`status` shows local, Ollama, and OpenAI provider connections. The active
+provider is marked with `(active)`.
 
 ## Ask Linux Questions
 
