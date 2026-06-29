@@ -36,7 +36,7 @@ ComAI also tries to detect file names mentioned in your request:
 
 ```bash
 comai explain README.md
-comai check scripts/install.sh
+comai explain scripts/install.sh
 ```
 
 Using `-f` is still the clearest option when accuracy matters.
@@ -47,7 +47,7 @@ For local provider requests, ComAI can answer simple log and file checks before 
 
 ```bash
 comai do you see any error? -f application.log
-comai check this log -f llama-swap.log
+comai scan this log -f llama-swap.log
 comai is this healthy? -f service.log
 ```
 
@@ -57,46 +57,30 @@ By default, ComAI looks for words such as:
 error errors failed failure exception fatal panic timeout warn warning traceback
 ```
 
-## File Size Limit
+## ComAI Service Logs
 
-The default per-file read limit is controlled by:
+ComAI writes its own service/status log here:
+
+```bash
+~/localcomai/logs/comai.log
+```
+
+This log stores provider status, service start/stop events, request status, selected provider/model, and request/response sizes. It does not write API keys.
+
+Watch it:
+
+```bash
+tail -f ~/localcomai/logs/comai.log
+```
+
+## File Size Limit
 
 ```yaml
 file_max_bytes: 24000
 ```
 
-You can edit this in:
+Edit this in:
 
 ```bash
 ~/localcomai/config/comai.yaml
 ```
-
-## Practical Recipes
-
-Explain a shell script:
-
-```bash
-comai explain this script step by step -f scripts/install.sh
-```
-
-Review a service log:
-
-```bash
-comai what is failing here? -f service.log
-```
-
-Summarize a config:
-
-```bash
-comai gpt summarize the important settings -f config/comai.yaml
-```
-
-Compare behavior:
-
-```bash
-comai compare installer and uninstaller behavior -f scripts/install.sh -f scripts/uninstall.sh
-```
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
-</div>

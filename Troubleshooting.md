@@ -6,124 +6,101 @@
   </a>
 </div>
 
-## `comai` Command Not Found
+## First Check
 
-Check that the wrapper exists:
+```bash
+comai status
+comai provider
+comai models
+```
+
+Also check the service/status log:
+
+```bash
+tail -n 80 ~/localcomai/logs/comai.log
+```
+
+## `comai` Command Not Found
 
 ```bash
 ls -l ~/.local/bin/comai ~/.local/bin/comi
-```
-
-Check your `PATH`:
-
-```bash
 echo "$PATH"
-```
-
-Temporary fix:
-
-```bash
 export PATH="$HOME/.local/bin:$PATH"
-```
-
-Then retry:
-
-```bash
 comai --help
 ```
 
-## Local AI API Is Not Responding
+## Local Provider Is Not Responding
 
-Start local AI:
+Start the bundled helper if you use LocalAI:
 
 ```bash
-systemctl --user start comai-localai.service
+comai start
 ```
 
-Or:
+Or check your OpenAI-compatible local server manually:
 
 ```bash
-~/ai/start.sh
+curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
 ```
 
-Check models:
+Confirm config:
 
-```bash
-curl -s http://127.0.0.1:11435/v1/models | jq -r '.data[].id'
+```yaml
+local_api_base: http://127.0.0.1:11435
+local_model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
 ```
 
 ## Configured Local Model Was Not Found
 
-If ComAI says the configured model was not found, LocalAI is running but the
-model in `~/localcomai/config/comai.yaml` is not available from LocalAI.
-
-Check installed local models:
+List local models:
 
 ```bash
-curl -s http://127.0.0.1:11435/v1/models | jq -r '.data[].id'
+comai models local
 ```
 
-Add the matching `.gguf` model file to:
-
-```bash
-~/ai/models
-```
-
-Or edit the configured model name:
-
-```bash
-~/localcomai/config/comai.yaml
-```
+Set `local_model` to one of those model IDs, or add the matching model to your local provider.
 
 ## Ollama Cannot Be Reached
 
-Make sure Ollama is running, then check:
-
 ```bash
-curl -s http://127.0.0.1:11434/api/tags | jq -r '.models[].name'
+comai status ollama
+curl -s http://127.0.0.1:11434/api/tags | jq -r .models[].name
 ```
 
 Confirm config:
 
 ```yaml
 ollama_api_base: http://127.0.0.1:11434
+ollama_model: qwen2.5-coder:7b
+```
+
+## OpenAI API Key Missing
+
+Set:
+
+```bash
+export OPENAI_API_KEY="your_api_key"
+```
+
+Or edit:
+
+```bash
+~/localcomai/config/comai.yaml
+```
+
+ComAI masks `openai_api_key` when you run:
+
+```bash
+comai config show
 ```
 
 ## OpenAI Says `429`
 
 OpenAI rejected the request because of rate limit, quota, billing, project, or credit limits. Check your OpenAI account and project settings.
 
-## OpenAI Works Without Exporting a Key
-
-ComAI may be reading the key from:
-
-```bash
-~/localcomai/config/comai.yaml
-```
-
-Look for:
-
-```yaml
-openai_api_key:
-```
-
-For better safety, keep the config key empty and use:
-
-```bash
-export OPENAI_API_KEY="your_api_key"
-```
-
 ## File Is Too Large
 
 ComAI reads up to `file_max_bytes` from each file.
-
-Edit:
-
-```bash
-~/localcomai/config/comai.yaml
-```
-
-Set:
 
 ```yaml
 file_max_bytes: 24000
@@ -131,13 +108,7 @@ file_max_bytes: 24000
 
 Increase it only if your model and context window can handle larger input.
 
-## Installer Cannot Replace Existing Command
-
-If `~/.local/bin/comai` exists and is not managed by ComAI, the installer leaves it alone. Rename or remove your existing command manually if you want ComAI to use that name.
-
-## Need a Clean Reinstall
-
-Uninstall:
+## Need A Clean Reinstall
 
 ```bash
 ~/localcomai/scripts/uninstall.sh
@@ -148,7 +119,3 @@ Then install again:
 ```bash
 ./scripts/install.sh
 ```
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
-</div>

@@ -13,18 +13,16 @@ ComAI installs as a user-space command-line tool. The default app directory is `
 Required commands:
 
 ```text
-bash curl jq find sort head sed awk grep wc tr readlink systemctl
+bash curl jq find sort head sed awk grep wc tr readlink date systemctl
 ```
 
 Optional commands:
 
 ```text
-file numfmt
+file numfmt git
 ```
 
 ## Install ComAI
-
-Clone the project and run the installer:
 
 ```bash
 git clone https://github.com/hossbit/comai-linux-assistant.git
@@ -39,34 +37,23 @@ The installer:
 - uses `~/localcomai` by default
 - creates `comai` and `comi` command wrappers
 - creates or updates `~/localcomai/config/comai.yaml`
+- creates `~/localcomai/logs/`
 - preserves existing config values when upgrading
-- installs a user systemd service file for local AI startup support
+- installs the optional LocalAI user service helper
 
 ## Custom Install Directory
-
-Use `--dir` for a non-default ComAI app location:
 
 ```bash
 ./scripts/install.sh --dir ~/aiass
 ```
 
-If LocalAI is installed somewhere other than `~/ai`, pass that path with
-`--ai-dir` so ComAI writes the correct `ai_dir` value before it creates and
-starts the service:
+If the bundled LocalAI helper should control a LocalAI install outside `~/ai`, pass:
 
 ```bash
 ./scripts/install.sh --dir ~/aiass --ai-dir ~/myai
 ```
 
-Environment variables are also supported:
-
-```bash
-COMAI_INSTALL_DIR="$HOME/apps/comai" ./scripts/install.sh
-```
-
-```bash
-COMAI_AI_DIR="$HOME/myai" ./scripts/install.sh
-```
+`--ai-dir` is only for the optional LocalAI helper service. Normal local provider requests use `local_api_base` in config.
 
 ## PATH Setup
 
@@ -76,7 +63,7 @@ ComAI command wrappers are installed in:
 ~/.local/bin
 ```
 
-If that directory is not in your shell `PATH`, the installer adds it to your shell config. Restart your terminal, or run:
+If needed:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
@@ -86,22 +73,13 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ```bash
 comai --help
-comi --help
-```
-
-Try a quick question:
-
-```bash
+comai status
 comai explain chmod 755
 ```
 
-If local AI is not running yet, use Ollama or OpenAI mode first:
+If local AI is not running yet, try another provider:
 
 ```bash
 comai ollama hi
 comai gpt hi
 ```
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
-</div>

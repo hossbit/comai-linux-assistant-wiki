@@ -6,7 +6,26 @@
   </a>
 </div>
 
-ComAI supports three provider modes: local AI, Ollama, and OpenAI-compatible APIs.
+ComAI supports three provider modes: local OpenAI-compatible APIs, Ollama, and OpenAI.
+
+## Status And Models
+
+```bash
+comai status
+comai provider
+comai models
+```
+
+Target one provider:
+
+```bash
+comai status local
+comai status ollama
+comai status openai
+comai models local
+comai models ollama
+comai models openai
+```
 
 ## Provider Selection
 
@@ -20,39 +39,34 @@ ComAI supports three provider modes: local AI, Ollama, and OpenAI-compatible API
 | `comai --gpt hi` | OpenAI |
 | `COMAI_PROVIDER=ollama comai hi` | Ollama |
 
-## Local AI
+## Local Provider
 
-Local mode is the default. It expects a local OpenAI-compatible API server from `hossbit/localai` under:
+Local mode talks to any OpenAI-compatible local API server.
 
-```bash
-~/ai
+Default:
+
+```yaml
+local_api_base: http://127.0.0.1:11435
+local_model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
 ```
 
-Start the user service:
+Examples:
 
-```bash
-systemctl --user start comai-localai.service
+```yaml
+# LocalAI
+local_api_base: http://127.0.0.1:11435
+
+# llama.cpp server
+local_api_base: http://127.0.0.1:8080
+
+# LM Studio
+local_api_base: http://127.0.0.1:1234
 ```
 
-Or start it manually:
+Local mode sends chat requests to:
 
-```bash
-~/ai/start.sh
-```
-
-Check local models:
-
-```bash
-curl -s http://127.0.0.1:11435/v1/models | jq -r '.data[].id'
-```
-
-Local mode uses the `model:` value from `~/localcomai/config/comai.yaml`.
-That model must exist as a `.gguf` file in `~/ai/models`.
-
-Run a local request:
-
-```bash
-comai explain chmod 755
+```text
+${local_api_base}/v1/chat/completions
 ```
 
 ## Ollama
@@ -65,25 +79,22 @@ comai ollama explain chmod 755
 comai ollama summarize this file -f README.md
 ```
 
-Check installed Ollama models:
+Default config:
 
-```bash
-curl -s http://127.0.0.1:11434/api/tags | jq -r '.models[].name'
+```yaml
+ollama_api_base: http://127.0.0.1:11434
+ollama_model: qwen2.5-coder:7b
 ```
 
-Choose one model for a request:
+## OpenAI
 
-```bash
-comai ollama --model=qwen2.5-coder:7b hi
-```
-
-## OpenAI / ChatGPT
-
-Set your API key:
+Set your key:
 
 ```bash
 export OPENAI_API_KEY="your_api_key"
 ```
+
+Or set `openai_api_key` in installed config.
 
 Run:
 
@@ -93,26 +104,17 @@ comai gpt explain chmod 755
 comai chatgpt summarize this file -f README.md
 ```
 
-Choose one model for a request:
+Default config:
 
-```bash
-comai gpt --model=gpt-5.5 hi
+```yaml
+openai_api_base: https://api.openai.com
+gpt_model: gpt-5.5
 ```
 
-## Compatible APIs
-
-ComAI can also point to OpenAI-compatible APIs by changing the API base:
+Choose one model for one request:
 
 ```bash
-comai --api-base=http://127.0.0.1:11435/v1 hi
+comai gpt --model=gpt-5.1-chat-latest hi
 ```
 
-For persistent settings, edit:
-
-```bash
-~/localcomai/config/comai.yaml
-```
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
-</div>
+Model self-identification is not reliable. Use `comai models openai` and your command/config to know which model was requested.

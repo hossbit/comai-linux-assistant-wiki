@@ -6,119 +6,89 @@
   </a>
 </div>
 
-Local mode expects an OpenAI-compatible API server running from:
+Local provider mode can use any OpenAI-compatible local server. The bundled service helper is mainly for the companion LocalAI install under `~/ai`.
+
+## Start, Stop, Restart
+
+Use ComAI commands:
 
 ```bash
-~/ai
+comai start
+comai stop
+comai restart
 ```
 
-The recommended companion project is `hossbit/localai`.
+When the user service exists, these call:
 
-If you install LocalAI into a custom directory, pass that path when installing
-ComAI:
+```bash
+systemctl --user start comai-localai.service
+systemctl --user stop comai-localai.service
+systemctl --user restart comai-localai.service
+```
+
+If the service file is not installed, ComAI falls back to:
+
+```bash
+~/ai/start.sh
+~/ai/stop.sh
+```
+
+## Check Status
+
+```bash
+comai status local
+comai provider
+comai models local
+```
+
+Manual API check:
+
+```bash
+curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
+```
+
+## Config
+
+Normal local provider config:
+
+```yaml
+local_api_base: http://127.0.0.1:11435
+local_model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+```
+
+Optional LocalAI helper directory:
+
+```yaml
+ai_dir: ~/ai
+```
+
+`ai_dir` only controls the start/stop helper. It does not choose the API endpoint or model for normal local requests.
+
+## Logs
+
+Service and provider events are written under the ComAI install directory:
+
+```bash
+~/localcomai/logs/comai.log
+```
+
+Watch logs:
+
+```bash
+tail -f ~/localcomai/logs/comai.log
+```
+
+## Custom LocalAI Directory
+
+Install ComAI with:
 
 ```bash
 ./scripts/install.sh --ai-dir ~/myai
 ```
 
-## Start Local AI
-
-Using the user service:
-
-```bash
-systemctl --user start comai-localai.service
-```
-
-Manual start:
-
-```bash
-~/ai/start.sh
-```
-
-For a custom LocalAI directory:
+Then the helper service uses:
 
 ```bash
 ~/myai/start.sh
+~/myai/stop.sh
 ```
-
-## Stop Local AI
-
-```bash
-systemctl --user stop comai-localai.service
-```
-
-## Enable on Login
-
-```bash
-systemctl --user enable comai-localai.service
-```
-
-## Check Service Status
-
-```bash
-systemctl --user status comai-localai.service
-```
-
-## Check API Health
-
-```bash
-curl -s http://127.0.0.1:11435/v1/models | jq -r '.data[].id'
-```
-
-If this command prints no model IDs, add one or more `.gguf` model files to:
-
-```bash
-~/ai/models
-```
-
-For a custom LocalAI directory, use that directory's `models` folder instead.
-
-## Config Values
-
-```yaml
-provider: local
-ai_dir: ~/ai
-api_base_url: http://127.0.0.1
-api_base_port: 11435
-model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
-```
-
-## Common Error
-
-If you see:
-
-```text
-Local AI API is not responding
-```
-
-Start the service:
-
-```bash
-systemctl --user start comai-localai.service
-```
-
-Or use another provider:
-
-```bash
-comai ollama hi
-comai gpt hi
-```
-
-If you see:
-
-```text
-LocalAI is running, but the configured model was not found
-```
-
-Add the matching `.gguf` file to `~/ai/models`, or edit `model:` in:
-
-```bash
-~/localcomai/config/comai.yaml
-```
-
-For a custom LocalAI directory, add the model to that directory's `models`
-folder.
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
-</div>

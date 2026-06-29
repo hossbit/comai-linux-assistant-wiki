@@ -6,7 +6,17 @@
   </a>
 </div>
 
-This page gives practical examples you can copy into a terminal.
+Practical commands you can copy into a terminal.
+
+## Check Setup
+
+```bash
+comai status
+comai provider
+comai models
+```
+
+`status` checks local, Ollama, and OpenAI provider connections. The active provider is marked with `(active)`.
 
 ## Ask Linux Questions
 
@@ -24,12 +34,12 @@ comai explain "tar -czf backup.tar.gz /etc"
 comai how this command work -command "find . -type f -size +100M"
 ```
 
-## Use a Specific Provider
+## Use Providers
 
 ```bash
-comai hi
-comai ollama hi
-comai gpt hi
+comai hi             # default provider from config
+comai ollama hi      # Ollama
+comai gpt hi         # OpenAI
 ```
 
 ## Analyze Files
@@ -41,15 +51,15 @@ comai gpt review this file -f app.log
 comai ollama explain this script -f install.sh
 ```
 
-## Scan Logs for Problems
+## Scan Logs
 
 ```bash
 comai do you see any error? -f application.log
-comai check this log -f llama-swap.log
+comai scan this log -f llama-swap.log
 comai is this healthy? -f service.log
 ```
 
-## Pick a Model for One Request
+## Pick A Model Once
 
 ```bash
 comai --model=Qwen2.5-7B-Instruct-Q4_K_M hi
@@ -57,20 +67,24 @@ comai ollama --model=qwen2.5-coder:7b hi
 comai gpt --model=gpt-5.5 hi
 ```
 
-## Limit Answer Length
+## Interactive Chat
 
 ```bash
-comai --max-tokens=120 explain chmod 755
-COMAI_MAX_TOKENS=120 comai explain chmod 755
+comai chat
 ```
 
-## Use a Custom API Base
+Type `/exit` or `/quit` to leave chat.
+
+## Logs
+
+ComAI writes service/status events to:
 
 ```bash
-comai --api-base=http://127.0.0.1:11435/v1 hi
-comai gpt --api-base=https://api.openai.com/v1 hi
+~/localcomai/logs/comai.log
 ```
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
-</div>
+Watch the log:
+
+```bash
+tail -f ~/localcomai/logs/comai.log
+```
