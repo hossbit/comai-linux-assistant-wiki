@@ -9,6 +9,7 @@ Start with:
 - [Installation](Installation.md)
 - [Providers](Providers.md)
 - [Configuration](Configuration.md)
+- [ComAI And LocalAI](ComAI-and-LocalAI.md)
 - [Local AI Service](Local-AI-Service.md)
 - [File and Log Analysis](File-and-Log-Analysis.md)
 - [Troubleshooting](Troubleshooting.md)

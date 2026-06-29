@@ -8,9 +8,14 @@
 
 ComAI supports three provider modes: local OpenAI-compatible APIs, Ollama, and OpenAI.
 
+LocalAI is one optional local provider. ComAI can also use LM Studio,
+llama.cpp server, or any other local API that exposes OpenAI-compatible
+`/v1/models` and `/v1/chat/completions` endpoints.
+
 ## Status And Models
 
 ```bash
+comai check
 comai status
 comai provider
 comai models
@@ -62,6 +67,9 @@ local_api_base: http://127.0.0.1:8080
 # LM Studio
 local_api_base: http://127.0.0.1:1234
 ```
+
+See [ComAI And LocalAI](ComAI-and-LocalAI) if you want to use the separate
+LocalAI project with ComAI.
 
 Local mode sends chat requests to:
 

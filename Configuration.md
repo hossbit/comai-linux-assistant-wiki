@@ -30,6 +30,13 @@ comai config show
 
 `openai_api_key` is masked when shown.
 
+Read one value:
+
+```bash
+comai config get provider
+comai config get local_model
+```
+
 ## Current Config Example
 
 ```yaml
@@ -97,6 +104,7 @@ comai --api-base=http://127.0.0.1:11435 hi
 
 ```bash
 comai config path
+comai config get provider
 comai config edit
 comai config set provider ollama
 ```

@@ -8,6 +8,10 @@
 
 ComAI installs as a user-space command-line tool. The default app directory is `~/localcomai`, and command wrappers are created in `~/.local/bin`.
 
+ComAI is the client. It can use LocalAI, Ollama, LM Studio, llama.cpp server,
+OpenAI, or any OpenAI-compatible API. LocalAI is optional and installed
+separately.
+
 ## Requirements
 
 Required commands:
@@ -39,7 +43,7 @@ The installer:
 - creates or updates `~/localcomai/config/comai.yaml`
 - creates `~/localcomai/logs/`
 - preserves existing config values when upgrading
-- installs the optional LocalAI user service helper
+- installs the optional LocalAI user service helper, but does not start it
 
 ## Custom Install Directory
 
@@ -47,13 +51,18 @@ The installer:
 ./scripts/install.sh --dir ~/aiass
 ```
 
-If the bundled LocalAI helper should control a LocalAI install outside `~/ai`, pass:
+If the optional LocalAI helper should control a LocalAI install outside `~/ai`, pass:
 
 ```bash
 ./scripts/install.sh --dir ~/aiass --ai-dir ~/myai
 ```
 
 `--ai-dir` is only for the optional LocalAI helper service. Normal local provider requests use `local_api_base` in config.
+
+See [ComAI And LocalAI](ComAI-and-LocalAI) for both install orders:
+
+- ComAI first, LocalAI later
+- LocalAI first, ComAI later
 
 ## PATH Setup
 
@@ -73,6 +82,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ```bash
 comai --help
+comai check
 comai status
 comai explain chmod 755
 ```

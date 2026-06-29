@@ -9,6 +9,7 @@
 ## First Check
 
 ```bash
+comai check
 comai status
 comai provider
 comai models
@@ -31,7 +32,8 @@ comai --help
 
 ## Local Provider Is Not Responding
 
-Start the bundled helper if you use LocalAI:
+If you use the separate LocalAI project through ComAI's optional helper, start
+the helper:
 
 ```bash
 comai start

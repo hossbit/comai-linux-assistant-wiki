@@ -5,6 +5,7 @@
 - [Quick Start](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/Quick-Start.md)
 - [Providers](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/Providers.md)
 - [Configuration](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/Configuration.md)
+- [ComAI And LocalAI](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/ComAI-and-LocalAI.md)
 - [File and Log Analysis](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/File-and-Log-Analysis.md)
 - [Local AI Service](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/Local-AI-Service.md)
 - [Troubleshooting](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/Troubleshooting.md)
@@ -15,6 +16,7 @@
 ## Common Tasks
 
 - [Install ComAI](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/Installation.md#install-comai)
+- [Use ComAI With LocalAI](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/ComAI-and-LocalAI.md)
 - [Use Ollama](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/Providers.md#ollama)
 - [Use OpenAI](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/Providers.md#openai--chatgpt)
 - [Analyze a File](https://github.com/hossbit/comai-linux-assistant-wiki/blob/main/File-and-Log-Analysis.md#analyze-files)

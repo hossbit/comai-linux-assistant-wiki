@@ -6,7 +6,13 @@
   </a>
 </div>
 
-Local provider mode can use any OpenAI-compatible local server. The bundled service helper is mainly for the companion LocalAI install under `~/ai`.
+Local provider mode can use any OpenAI-compatible local server. The optional
+service helper is mainly for the separate LocalAI project when it is installed
+under the configured `ai_dir`.
+
+ComAI does not require LocalAI. If you use Ollama, LM Studio, llama.cpp server,
+or another compatible local API, you can ignore the helper service and configure
+`local_api_base` instead.
 
 ## Start, Stop, Restart
 
@@ -16,6 +22,14 @@ Use ComAI commands:
 comai start
 comai stop
 comai restart
+```
+
+The ComAI installer creates `comai-localai.service` but does not start it
+automatically. Start it only after LocalAI is installed and the configured
+`ai_dir` contains `start.sh` and `stop.sh`.
+
+```bash
+systemctl --user enable --now comai-localai.service
 ```
 
 When the user service exists, these call:
@@ -36,6 +50,7 @@ If the service file is not installed, ComAI falls back to:
 ## Check Status
 
 ```bash
+comai check
 comai status local
 comai provider
 comai models local
@@ -92,6 +107,8 @@ Then the helper service uses:
 ~/myai/start.sh
 ~/myai/stop.sh
 ```
+
+For the full two-project explanation, see [ComAI And LocalAI](ComAI-and-LocalAI).
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">

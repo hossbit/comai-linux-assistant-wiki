@@ -12,6 +12,8 @@
 
 ComAI is a Bash-powered AI assistant for Linux terminals. It helps you ask Linux questions, explain commands, inspect files, scan logs, and use local AI, Ollama, or OpenAI from one command.
 
+ComAI is the client. LocalAI is one optional backend. See [ComAI And LocalAI](ComAI-and-LocalAI) for install order, Fedora notes, and how the two separate projects fit together.
+
 ## Start Here
 
 ```bash
@@ -40,6 +42,7 @@ comai gpt hi
 - [Installation](Installation)
 - [Providers](Providers)
 - [Configuration](Configuration)
+- [ComAI And LocalAI](ComAI-and-LocalAI)
 - [Local AI Service](Local-AI-Service)
 - [File and Log Analysis](File-and-Log-Analysis)
 - [Troubleshooting](Troubleshooting)
@@ -55,13 +58,14 @@ comai chat        # Start an interactive conversation
 comai explain     # Explain a command, error, or output
 comai analyze     # Analyze logs, files, or piped output
 comai status      # Show provider status and connections
+comai check       # Check the active provider only
 comai provider    # Show active and available providers
 comai models      # List models from all providers
-comai config      # View or edit settings
+comai config      # View, get, or edit settings
 comai history     # Show previous conversations
-comai start       # Start the bundled LocalAI helper service
-comai stop        # Stop the bundled LocalAI helper service
-comai restart     # Restart the bundled LocalAI helper service
+comai start       # Start the optional LocalAI helper service
+comai stop        # Stop the optional LocalAI helper service
+comai restart     # Restart the optional LocalAI helper service
 ```
 
 ## Project Links
