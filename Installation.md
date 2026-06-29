@@ -83,3 +83,7 @@ If local AI is not running yet, try another provider:
 comai ollama hi
 comai gpt hi
 ```
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>

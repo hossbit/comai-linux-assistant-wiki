@@ -118,3 +118,7 @@ comai gpt --model=gpt-5.1-chat-latest hi
 ```
 
 Model self-identification is not reliable. Use `comai models openai` and your command/config to know which model was requested.
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>

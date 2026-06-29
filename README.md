@@ -13,3 +13,7 @@ Start with:
 - [File and Log Analysis](File-and-Log-Analysis.md)
 - [Troubleshooting](Troubleshooting.md)
 - [Uninstall](Uninstall.md)
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>

@@ -119,3 +119,7 @@ Then install again:
 ```bash
 ./scripts/install.sh
 ```
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+</div>
