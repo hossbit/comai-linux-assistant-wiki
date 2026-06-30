@@ -143,10 +143,22 @@ Increase it only if your model and context window can handle larger input.
 ## Need A Clean Reinstall
 
 ```bash
-~/localcomai/scripts/uninstall.sh
+comai uninstall
 ```
 
 Then install again:
+
+```bash
+curl -fsSL https://hossbit.github.io/comai/install.sh | bash
+```
+
+If `comai` is not on your `PATH`, run the installed uninstaller directly:
+
+```bash
+~/localcomai/scripts/uninstall.sh
+```
+
+If you are working from a source checkout, reinstall from that checkout with:
 
 ```bash
 ./scripts/install.sh

@@ -45,9 +45,7 @@ Use this when you want the ComAI client first, or when you already have another
 local provider.
 
 ```bash
-git clone https://github.com/hossbit/comai-linux-assistant.git
-cd comai-linux-assistant
-./scripts/install.sh
+curl -fsSL https://hossbit.github.io/comai/install.sh | bash
 ```
 
 After installing ComAI, local provider status may fail until a local server is
@@ -117,9 +115,7 @@ localai check
 Then install ComAI:
 
 ```bash
-git clone https://github.com/hossbit/comai-linux-assistant.git
-cd comai-linux-assistant
-./scripts/install.sh
+curl -fsSL https://hossbit.github.io/comai/install.sh | bash
 ```
 
 Set the matching model in ComAI:

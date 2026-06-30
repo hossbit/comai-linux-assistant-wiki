@@ -75,6 +75,18 @@ comai gpt --model=gpt-5.5 hi
 
 No. Passing a file with `-f` reads it as context. ComAI does not edit that file.
 
+## How do I update ComAI?
+
+```bash
+comai update
+```
+
+## How do I remove ComAI?
+
+```bash
+comai uninstall
+```
+
 ## How do I publish this wiki to GitHub?
 
 For a standalone documentation repository:

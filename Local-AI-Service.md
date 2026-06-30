@@ -90,7 +90,7 @@ tail -f ~/localcomai/logs/comai.log
 
 ## Custom LocalAI Directory
 
-Install ComAI with:
+Install ComAI from a source checkout with:
 
 ```bash
 ./scripts/install.sh --ai-dir ~/myai

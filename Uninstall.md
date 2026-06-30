@@ -10,6 +10,14 @@ ComAI includes an uninstaller that removes ComAI-managed user files and leaves u
 
 ## Run Uninstaller
 
+Recommended:
+
+```bash
+comai uninstall
+```
+
+If `comai` is not on your `PATH`, run the installed uninstaller directly:
+
 ```bash
 ~/localcomai/scripts/uninstall.sh
 ```
@@ -17,7 +25,7 @@ ComAI includes an uninstaller that removes ComAI-managed user files and leaves u
 If you installed to a custom directory:
 
 ```bash
-~/aiass/scripts/uninstall.sh --dir ~/aiass
+~/aiass/scripts/uninstall.sh
 ```
 
 Environment variables are also supported:
@@ -54,9 +62,9 @@ ls ~/.local/bin/comai ~/.local/bin/comi
 
 If the commands are gone, `command -v` returns no path.
 
-## Local AI Is Separate
+## LocalAI Is Separate
 
-ComAI and localai are separate pieces. Removing ComAI does not delete:
+ComAI and LocalAI are separate pieces. Removing ComAI does not delete:
 
 ```bash
 ~/ai

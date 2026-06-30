@@ -67,6 +67,9 @@ comai history     # Show previous conversations
 comai start       # Start the optional LocalAI helper service
 comai stop        # Stop the optional LocalAI helper service
 comai restart     # Restart the optional LocalAI helper service
+comai update      # Update ComAI
+comai version     # Show installed version
+comai uninstall   # Remove ComAI
 ```
 
 ## Project Links

@@ -26,7 +26,7 @@ file numfmt git
 
 ## Install ComAI
 
-One-line install:
+Recommended one-line install:
 
 ```bash
 curl -fsSL https://hossbit.github.io/comai/install.sh | bash
@@ -59,6 +59,14 @@ The installer:
 
 ## Custom Install Directory
 
+With the one-line installer:
+
+```bash
+curl -fsSL https://hossbit.github.io/comai/install.sh | COMAI_INSTALL_DIR="$HOME/apps/comai" bash
+```
+
+From a source checkout:
+
 ```bash
 ./scripts/install.sh --dir ~/aiass
 ```
@@ -70,6 +78,22 @@ If the optional LocalAI helper should control a LocalAI install outside `~/ai`, 
 ```
 
 `--ai-dir` is only for the optional LocalAI helper service. Normal provider requests use the provider's `api_base` and `model` in config.
+
+## Update ComAI
+
+```bash
+comai update
+```
+
+For a one-line install, `comai update` downloads the latest source and reruns the installer while preserving config values. For a git checkout, it runs a fast-forward pull.
+
+## Remove ComAI
+
+```bash
+comai uninstall
+```
+
+See [Uninstall](Uninstall.md) for custom install directories and what is left untouched.
 
 See [ComAI And LocalAI](ComAI-and-LocalAI.md) for both install orders:
 
