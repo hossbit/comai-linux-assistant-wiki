@@ -103,7 +103,7 @@ Then the helper service uses:
 ~/myai/stop.sh
 ```
 
-For the full two-project explanation, see [ComAI And LocalAI](ComAI-and-LocalAI).
+For the full two-project explanation, see [ComAI And LocalAI](ComAI-and-LocalAI.md).
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">

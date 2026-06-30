@@ -74,7 +74,7 @@ providers:
     api_base: http://127.0.0.1:8080
 ```
 
-See [ComAI And LocalAI](ComAI-and-LocalAI) if you want to use the separate LocalAI project with ComAI.
+See [ComAI And LocalAI](ComAI-and-LocalAI.md) if you want to use the separate LocalAI project with ComAI.
 
 Local mode sends chat requests to:
 

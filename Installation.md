@@ -57,7 +57,7 @@ If the optional LocalAI helper should control a LocalAI install outside `~/ai`, 
 
 `--ai-dir` is only for the optional LocalAI helper service. Normal provider requests use the provider's `api_base` and `model` in config.
 
-See [ComAI And LocalAI](ComAI-and-LocalAI) for both install orders:
+See [ComAI And LocalAI](ComAI-and-LocalAI.md) for both install orders:
 
 - ComAI first, LocalAI later
 - LocalAI first, ComAI later
