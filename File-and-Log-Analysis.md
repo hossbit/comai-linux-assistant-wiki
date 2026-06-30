@@ -20,6 +20,7 @@ Provider-specific examples:
 
 ```bash
 comai ollama summarize this file -f README.md
+comai lmstudio summarize this file -f README.md
 comai gpt explain this nginx configuration -f nginx.conf
 ```
 

@@ -42,7 +42,7 @@ The uninstaller does not remove:
 - the source checkout
 - your LocalAI install, usually `~/ai`
 - files that do not look managed by ComAI
-- command wrappers that point somewhere else
+- command symlinks that point somewhere else
 
 ## Verify Removal
 

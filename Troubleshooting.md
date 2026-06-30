@@ -29,10 +29,11 @@ export PATH="$HOME/.local/bin:$PATH"
 comai --help
 ```
 
+`comai` and `comi` should be symlinks to the installed ComAI command.
+
 ## Local Provider Is Not Responding
 
-If you use the separate LocalAI project through ComAI's optional helper, start
-the helper:
+If you use the separate LocalAI project through ComAI's optional helper, start the helper:
 
 ```bash
 comai start
@@ -47,8 +48,10 @@ curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
 Confirm config:
 
 ```yaml
-local_api_base: http://127.0.0.1:11435
-local_model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+providers:
+  local:
+    api_base: http://127.0.0.1:11435
+    model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
 ```
 
 ## Configured Local Model Was Not Found
@@ -59,7 +62,7 @@ List local models:
 comai models local
 ```
 
-Set `local_model` to one of those model IDs, or add the matching model to your local provider.
+Set `providers.local.model` to one of those model IDs, or add the matching model to your local provider.
 
 ## Ollama Cannot Be Reached
 
@@ -71,9 +74,37 @@ curl -s http://127.0.0.1:11434/api/tags | jq -r .models[].name
 Confirm config:
 
 ```yaml
-ollama_api_base: http://127.0.0.1:11434
-ollama_model: qwen2.5-coder:7b
+providers:
+  ollama:
+    api_base: http://127.0.0.1:11434
+    model: qwen2.5-coder:7b
 ```
+
+## LM Studio Cannot Be Reached
+
+Start the server:
+
+```bash
+lms server start --port 1234
+```
+
+Check it:
+
+```bash
+comai status lmstudio
+curl -s http://127.0.0.1:1234/v1/models | jq -r .data[].id
+```
+
+Confirm config:
+
+```yaml
+providers:
+  lmstudio:
+    api_base: http://127.0.0.1:1234
+    model: local-model
+```
+
+If ComAI reports an empty LM Studio response with a reasoning model, try a non-reasoning chat model, increase `--max-tokens`, or disable thinking in LM Studio for that model.
 
 ## OpenAI API Key Missing
 
@@ -89,7 +120,7 @@ Or edit:
 ~/localcomai/config/comai.yaml
 ```
 
-ComAI masks `openai_api_key` when you run:
+ComAI masks `providers.openai.api_key` and legacy `openai_api_key` when you run:
 
 ```bash
 comai config show

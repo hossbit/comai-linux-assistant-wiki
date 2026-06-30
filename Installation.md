@@ -6,11 +6,9 @@
   </a>
 </div>
 
-ComAI installs as a user-space command-line tool. The default app directory is `~/localcomai`, and command wrappers are created in `~/.local/bin`.
+ComAI installs as a user-space command-line tool. The default app directory is `~/localcomai`, and command symlinks are created in `~/.local/bin`.
 
-ComAI is the client. It can use LocalAI, Ollama, LM Studio, llama.cpp server,
-OpenAI, or any OpenAI-compatible API. LocalAI is optional and installed
-separately.
+ComAI is the client. It can use LocalAI, Ollama, LM Studio, llama.cpp server, OpenAI, or any OpenAI-compatible API. LocalAI is optional and installed separately.
 
 ## Requirements
 
@@ -39,7 +37,7 @@ The installer:
 
 - asks where to install ComAI
 - uses `~/localcomai` by default
-- creates `comai` and `comi` command wrappers
+- creates `comai` and `comi` symlinks in `~/.local/bin`
 - creates or updates `~/localcomai/config/comai.yaml`
 - creates `~/localcomai/logs/`
 - preserves existing config values when upgrading
@@ -57,7 +55,7 @@ If the optional LocalAI helper should control a LocalAI install outside `~/ai`, 
 ./scripts/install.sh --dir ~/aiass --ai-dir ~/myai
 ```
 
-`--ai-dir` is only for the optional LocalAI helper service. Normal local provider requests use `local_api_base` in config.
+`--ai-dir` is only for the optional LocalAI helper service. Normal provider requests use the provider's `api_base` and `model` in config.
 
 See [ComAI And LocalAI](ComAI-and-LocalAI) for both install orders:
 
@@ -66,7 +64,7 @@ See [ComAI And LocalAI](ComAI-and-LocalAI) for both install orders:
 
 ## PATH Setup
 
-ComAI command wrappers are installed in:
+ComAI command symlinks are installed in:
 
 ```bash
 ~/.local/bin
@@ -90,6 +88,7 @@ If local AI is not running yet, try another provider:
 
 ```bash
 comai ollama hi
+comai lmstudio hi
 comai gpt hi
 ```
 

@@ -6,11 +6,9 @@
   </a>
 </div>
 
-ComAI supports three provider modes: local OpenAI-compatible APIs, Ollama, and OpenAI.
+ComAI supports four provider modes: local OpenAI-compatible APIs, Ollama, LM Studio, and OpenAI.
 
-LocalAI is one optional local provider. ComAI can also use LM Studio,
-llama.cpp server, or any other local API that exposes OpenAI-compatible
-`/v1/models` and `/v1/chat/completions` endpoints.
+LocalAI is one optional local provider. ComAI can also use llama.cpp server or any other local API that exposes OpenAI-compatible `/v1/models` and `/v1/chat/completions` endpoints.
 
 ## Status And Models
 
@@ -25,9 +23,11 @@ Target one provider:
 ```bash
 comai status local
 comai status ollama
+comai status lmstudio
 comai status openai
 comai models local
 comai models ollama
+comai models lmstudio
 comai models openai
 ```
 
@@ -36,12 +36,16 @@ comai models openai
 | Command | Provider |
 | --- | --- |
 | `comai hi` | default provider from config |
+| `comai local hi` | local OpenAI-compatible provider |
+| `comai --local hi` | local OpenAI-compatible provider |
 | `comai ollama hi` | Ollama |
 | `comai --ollama hi` | Ollama |
+| `comai lmstudio hi` | LM Studio |
+| `comai --lmstudio hi` | LM Studio |
 | `comai gpt hi` | OpenAI |
 | `comai chatgpt hi` | OpenAI |
 | `comai --gpt hi` | OpenAI |
-| `COMAI_PROVIDER=ollama comai hi` | Ollama |
+| `COMAI_PROVIDER=lmstudio comai hi` | LM Studio |
 
 ## Local Provider
 
@@ -50,30 +54,32 @@ Local mode talks to any OpenAI-compatible local API server.
 Default:
 
 ```yaml
-local_api_base: http://127.0.0.1:11435
-local_model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+providers:
+  local:
+    api_base: http://127.0.0.1:11435
+    model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
 ```
 
 Examples:
 
 ```yaml
 # LocalAI
-local_api_base: http://127.0.0.1:11435
+providers:
+  local:
+    api_base: http://127.0.0.1:11435
 
 # llama.cpp server
-local_api_base: http://127.0.0.1:8080
-
-# LM Studio
-local_api_base: http://127.0.0.1:1234
+providers:
+  local:
+    api_base: http://127.0.0.1:8080
 ```
 
-See [ComAI And LocalAI](ComAI-and-LocalAI) if you want to use the separate
-LocalAI project with ComAI.
+See [ComAI And LocalAI](ComAI-and-LocalAI) if you want to use the separate LocalAI project with ComAI.
 
 Local mode sends chat requests to:
 
 ```text
-${local_api_base}/v1/chat/completions
+${api_base}/v1/chat/completions
 ```
 
 ## Ollama
@@ -89,9 +95,43 @@ comai ollama summarize this file -f README.md
 Default config:
 
 ```yaml
-ollama_api_base: http://127.0.0.1:11434
-ollama_model: qwen2.5-coder:7b
+providers:
+  ollama:
+    api_base: http://127.0.0.1:11434
+    model: qwen2.5-coder:7b
 ```
+
+## LM Studio
+
+Start the LM Studio local server:
+
+```bash
+lms server start --port 1234
+```
+
+Check models:
+
+```bash
+curl -s http://127.0.0.1:1234/v1/models | jq -r .data[].id
+```
+
+Default config:
+
+```yaml
+providers:
+  lmstudio:
+    api_base: http://127.0.0.1:1234
+    model: local-model
+```
+
+Run:
+
+```bash
+comai lmstudio hi
+comai lmstudio --model=qwen/qwen3.5-9b hi
+```
+
+Some reasoning models may return `reasoning_content` before normal `content`. If ComAI reports an empty LM Studio response, try a non-reasoning chat model, increase `--max-tokens`, or disable thinking in LM Studio for that model.
 
 ## OpenAI
 
@@ -101,7 +141,7 @@ Set your key:
 export OPENAI_API_KEY="your_api_key"
 ```
 
-Or set `openai_api_key` in installed config.
+Or set `providers.openai.api_key` in installed config.
 
 Run:
 
@@ -114,8 +154,11 @@ comai chatgpt summarize this file -f README.md
 Default config:
 
 ```yaml
-openai_api_base: https://api.openai.com
-gpt_model: gpt-5.5
+providers:
+  openai:
+    api_base: https://api.openai.com
+    model: gpt-5.5
+    api_key:
 ```
 
 Choose one model for one request:

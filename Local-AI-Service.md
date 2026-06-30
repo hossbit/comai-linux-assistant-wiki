@@ -6,13 +6,9 @@
   </a>
 </div>
 
-Local provider mode can use any OpenAI-compatible local server. The optional
-service helper is mainly for the separate LocalAI project when it is installed
-under the configured `ai_dir`.
+Local provider mode can use any OpenAI-compatible local server. The optional service helper is mainly for the separate LocalAI project when it is installed under the configured `ai_dir`.
 
-ComAI does not require LocalAI. If you use Ollama, LM Studio, llama.cpp server,
-or another compatible local API, you can ignore the helper service and configure
-`local_api_base` instead.
+ComAI does not require LocalAI. If you use Ollama, LM Studio, llama.cpp server, or another compatible local API, you can ignore the helper service and configure the provider's `api_base` instead.
 
 ## Start, Stop, Restart
 
@@ -24,9 +20,7 @@ comai stop
 comai restart
 ```
 
-The ComAI installer creates `comai-localai.service` but does not start it
-automatically. Start it only after LocalAI is installed and the configured
-`ai_dir` contains `start.sh` and `stop.sh`.
+The ComAI installer creates `comai-localai.service` but does not start it automatically. Start it only after LocalAI is installed and the configured `ai_dir` contains `start.sh` and `stop.sh`.
 
 ```bash
 systemctl --user enable --now comai-localai.service
@@ -66,8 +60,10 @@ curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
 Normal local provider config:
 
 ```yaml
-local_api_base: http://127.0.0.1:11435
-local_model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+providers:
+  local:
+    api_base: http://127.0.0.1:11435
+    model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
 ```
 
 Optional LocalAI helper directory:

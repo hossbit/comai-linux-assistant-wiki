@@ -28,26 +28,42 @@ Show installed config safely:
 comai config show
 ```
 
-`openai_api_key` is masked when shown.
+`providers.openai.api_key` and legacy `openai_api_key` values are masked when shown.
 
 Read one value:
 
 ```bash
 comai config get provider
-comai config get local_model
 ```
 
 ## Current Config Example
 
 ```yaml
+# Default provider. Use "local", "ollama", "lmstudio", or "openai".
 provider: local
-local_api_base: http://127.0.0.1:11435
-local_model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
-gpt_model: gpt-5.5
-ollama_api_base: http://127.0.0.1:11434
-ollama_model: qwen2.5-coder:7b
-openai_api_base: https://api.openai.com
-openai_api_key:
+
+# Optional LocalAI helper directory. This is only used by the start/stop helper service.
+ai_dir: ~/ai
+
+# Provider-specific settings.
+providers:
+  local:
+    api_base: http://127.0.0.1:11435
+    model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+
+  ollama:
+    api_base: http://127.0.0.1:11434
+    model: qwen2.5-coder:7b
+
+  lmstudio:
+    api_base: http://127.0.0.1:1234
+    model: local-model
+
+  openai:
+    api_base: https://api.openai.com
+    model: gpt-5.5
+    api_key:
+
 max_tokens: 420
 timeout: 120
 log_file: logs/comai.log
@@ -61,14 +77,17 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 
 | Key | Purpose |
 | --- | --- |
-| `provider` | Default provider: `local`, `ollama`, or `openai`. |
-| `local_api_base` | OpenAI-compatible local API base. |
-| `local_model` | Default local model. |
-| `gpt_model` | Default OpenAI model. |
-| `ollama_api_base` | Ollama API base. |
-| `ollama_model` | Default Ollama model. |
-| `openai_api_base` | OpenAI or compatible API base. |
-| `openai_api_key` | Optional API key in config. Environment variable is safer. |
+| `provider` | Default provider: `local`, `ollama`, `lmstudio`, or `openai`. |
+| `ai_dir` | Optional LocalAI helper directory for `comai start`, `stop`, and `restart`. |
+| `providers.local.api_base` | OpenAI-compatible local API base. |
+| `providers.local.model` | Default local OpenAI-compatible model. |
+| `providers.ollama.api_base` | Ollama API base. |
+| `providers.ollama.model` | Default Ollama model. |
+| `providers.lmstudio.api_base` | LM Studio local server base URL. |
+| `providers.lmstudio.model` | Default LM Studio model. |
+| `providers.openai.api_base` | OpenAI API base. |
+| `providers.openai.model` | Default OpenAI model. |
+| `providers.openai.api_key` | Optional API key in config. Environment variable is safer. |
 | `max_tokens` | Maximum requested answer length. |
 | `timeout` | Request timeout in seconds. |
 | `log_file` | Service/status log path. Relative paths are under the ComAI install directory. |
@@ -79,9 +98,18 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 
 ## Compatibility
 
-Older installed configs still work, but new configs should use `local_api_base` and `local_model` for local provider requests.
+Older installed configs with flat keys still work. New configs should use the `providers:` sections.
 
-`ai_dir` is only for the optional LocalAI start/stop helper service.
+Legacy flat keys include:
+
+```text
+local_api_base local_model
+ollama_api_base ollama_model
+lmstudio_api_base lmstudio_model
+openai_api_base gpt_model openai_api_key
+```
+
+If both flat keys and provider-section keys exist, the flat key is kept for compatibility.
 
 ## Environment Overrides
 
@@ -98,6 +126,12 @@ OPENAI_API_KEY=your_api_key comai gpt hi
 comai --model=Qwen2.5-7B-Instruct-Q4_K_M hi
 comai --max-tokens=120 explain chmod 755
 comai --api-base=http://127.0.0.1:11435 hi
+```
+
+Useful priority rule:
+
+```text
+command option > environment variable > config value > built-in fallback
 ```
 
 ## Edit Config

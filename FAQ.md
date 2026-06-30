@@ -36,7 +36,7 @@ Source default:
 config/comai.yaml
 ```
 
-## Can I use Ollama without localai?
+## Can I use Ollama without LocalAI?
 
 Yes. Start Ollama and run:
 
@@ -44,7 +44,16 @@ Yes. Start Ollama and run:
 comai ollama hi
 ```
 
-## Can I use OpenAI without localai?
+## Can I use LM Studio without LocalAI?
+
+Yes. Start the LM Studio server and run:
+
+```bash
+lms server start --port 1234
+comai lmstudio hi
+```
+
+## Can I use OpenAI without LocalAI?
 
 Yes. Set an API key and run:
 
@@ -58,6 +67,7 @@ comai gpt hi
 ```bash
 comai --model=MODEL_NAME hi
 comai ollama --model=qwen2.5-coder:7b hi
+comai lmstudio --model=qwen/qwen3.5-9b hi
 comai gpt --model=gpt-5.5 hi
 ```
 

@@ -77,9 +77,22 @@ Then point ComAI at the model name without `.gguf`:
 
 ```bash
 comai config set provider local
-comai config set local_api_base http://127.0.0.1:11435
-comai config set local_model Qwen2.5-Coder-7B-Instruct-Q2_K
-comai status
+comai config edit
+```
+
+Use the local provider section:
+
+```yaml
+providers:
+  local:
+    api_base: http://127.0.0.1:11435
+    model: Qwen2.5-Coder-7B-Instruct-Q2_K
+```
+
+Then check it:
+
+```bash
+comai status local
 ```
 
 ### LocalAI First, ComAI Later
@@ -113,8 +126,22 @@ Set the matching model in ComAI:
 
 ```bash
 comai config set provider local
-comai config set local_model MODEL_NAME_WITHOUT_GGUF
-comai status
+comai config edit
+```
+
+Update:
+
+```yaml
+providers:
+  local:
+    api_base: http://127.0.0.1:11435
+    model: MODEL_NAME_WITHOUT_GGUF
+```
+
+Then run:
+
+```bash
+comai status local
 ```
 
 ## Optional ComAI Helper Service

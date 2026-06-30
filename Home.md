@@ -10,7 +10,7 @@
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
 </div>
 
-ComAI is a Bash-powered AI assistant for Linux terminals. It helps you ask Linux questions, explain commands, inspect files, scan logs, and use local AI, Ollama, or OpenAI from one command.
+ComAI is a Bash-powered AI assistant for Linux terminals. It helps you ask Linux questions, explain commands, inspect files, scan logs, and use local AI providers, Ollama, LM Studio, or OpenAI from one command.
 
 ComAI is the client. LocalAI is one optional backend. See [ComAI And LocalAI](ComAI-and-LocalAI) for install order, Fedora notes, and how the two separate projects fit together.
 
@@ -21,6 +21,7 @@ comai status
 comai explain chmod 755
 comai do you see any error? -f application.log
 comai ollama hi
+comai lmstudio hi
 comai gpt hi
 ```
 
@@ -32,8 +33,9 @@ comai gpt hi
 | Command explanation | Explain commands and flags before running them. |
 | File analysis | Send scripts, configs, notes, and logs with `-f`. |
 | Log checks | Find likely errors, warnings, failures, and tracebacks. |
-| Local AI | Use any OpenAI-compatible local server. |
+| Local provider | Use any OpenAI-compatible local server. |
 | Ollama | Use local Ollama models with `comai ollama ...`. |
+| LM Studio | Use LM Studio with `comai lmstudio ...`. |
 | OpenAI | Use OpenAI models with `comai gpt ...`. |
 
 ## Main Pages
@@ -74,6 +76,7 @@ comai restart     # Restart the optional LocalAI helper service
 - Main command: `comai`
 - Short alias: `comi`
 - Default install directory: `~/localcomai`
+- Command symlinks: `~/.local/bin/comai` and `~/.local/bin/comi`
 - Installed config: `~/localcomai/config/comai.yaml`
 - Service/status log: `~/localcomai/logs/comai.log`
 

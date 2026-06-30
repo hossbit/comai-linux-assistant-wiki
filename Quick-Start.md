@@ -16,8 +16,7 @@ comai provider
 comai models
 ```
 
-`status` shows local, Ollama, and OpenAI provider connections. The active
-provider is marked with `(active)`.
+`status` shows local, Ollama, LM Studio, and OpenAI provider connections. The active provider is marked with `(active)`.
 
 ## Ask Linux Questions
 
@@ -40,6 +39,7 @@ comai how this command work -command "find . -type f -size +100M"
 ```bash
 comai hi             # default provider from config
 comai ollama hi      # Ollama
+comai lmstudio hi    # LM Studio
 comai gpt hi         # OpenAI
 ```
 
@@ -65,7 +65,15 @@ comai is this healthy? -f service.log
 ```bash
 comai --model=Qwen2.5-7B-Instruct-Q4_K_M hi
 comai ollama --model=qwen2.5-coder:7b hi
+comai lmstudio --model=qwen/qwen3.5-9b hi
 comai gpt --model=gpt-5.5 hi
+```
+
+## Override Request Limits Once
+
+```bash
+comai --max-tokens=120 explain chmod 755
+comai --api-base=http://127.0.0.1:1234 lmstudio hi
 ```
 
 ## Interactive Chat
