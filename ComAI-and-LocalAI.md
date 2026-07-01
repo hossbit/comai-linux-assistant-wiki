@@ -58,15 +58,20 @@ comai status
 Later, install LocalAI if you want to run GGUF models locally:
 
 ```bash
-git clone https://github.com/hossbit/local-ai-server.git
-cd local-ai-server
-LLAMA_CPP_BACKEND=cpu ./install-local-ai.sh
+curl -fsSL https://hossbit.github.io/localai/install.sh | bash
 ```
 
-Add a chat model:
+The LocalAI 1.1.5 installer defaults to the Vulkan llama.cpp backend. For a
+CPU-only machine or simple VM test, use:
 
 ```bash
-cp Qwen2.5-Coder-7B-Instruct-Q2_K.gguf ~/ai/models/
+curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=cpu bash
+```
+
+Add a chat model to the LocalAI models directory:
+
+```bash
+cp Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf ~/ai/models/
 localai start
 localai check
 ```
@@ -84,7 +89,7 @@ Use the local provider section:
 providers:
   local:
     api_base: http://127.0.0.1:11435
-    model: Qwen2.5-Coder-7B-Instruct-Q2_K
+    model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
 ```
 
 Then check it:
@@ -99,9 +104,7 @@ Use this when you want the local server and model ready before installing the
 terminal assistant.
 
 ```bash
-git clone https://github.com/hossbit/local-ai-server.git
-cd local-ai-server
-./install-local-ai.sh
+curl -fsSL https://hossbit.github.io/localai/install.sh | bash
 ```
 
 Add a model and start the server:
@@ -174,7 +177,7 @@ ca-certificates curl iproute jq tar vulkan-loader
 For a CPU-only Fedora VM, use:
 
 ```bash
-LLAMA_CPP_BACKEND=cpu ./install-local-ai.sh
+curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=cpu bash
 ```
 
 CPU installs use:
@@ -226,6 +229,9 @@ localai models
 localai start
 localai status
 localai check
+localai check --chat
+localai load MODEL_NAME
+localai unload all
 ```
 
 Direct API:
