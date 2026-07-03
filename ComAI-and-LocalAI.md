@@ -148,13 +148,13 @@ comai status local
 ComAI installs an optional `comai-localai.service` helper, but it does not start
 it automatically. This helper is only for users who want ComAI commands such as
 `comai start`, `comai stop`, and `comai restart` to call a LocalAI install's
-`start.sh` and `stop.sh`.
+`bin/start.sh` and `bin/stop.sh`.
 
 If you use Ollama, LM Studio, llama.cpp server, or another local provider, you
 can ignore this helper.
 
 Start the helper only when LocalAI is installed and the configured `ai_dir`
-contains `start.sh` and `stop.sh`:
+contains `bin/start.sh` and `bin/stop.sh`:
 
 ```bash
 systemctl --user enable --now comai-localai.service

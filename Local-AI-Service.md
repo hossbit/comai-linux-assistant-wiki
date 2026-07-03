@@ -20,7 +20,7 @@ comai stop
 comai restart
 ```
 
-The ComAI installer creates `comai-localai.service` but does not start it automatically. Start it only after LocalAI is installed and the configured `ai_dir` contains `start.sh` and `stop.sh`.
+The ComAI installer creates `comai-localai.service` but does not start it automatically. Start it only after LocalAI is installed and the configured `ai_dir` contains `bin/start.sh` and `bin/stop.sh`.
 
 ```bash
 systemctl --user enable --now comai-localai.service
@@ -37,9 +37,11 @@ systemctl --user restart comai-localai.service
 If the service file is not installed, ComAI falls back to:
 
 ```bash
-~/ai/start.sh
-~/ai/stop.sh
+~/ai/bin/start.sh
+~/ai/bin/stop.sh
 ```
+
+Older LocalAI installs with `~/ai/start.sh` and `~/ai/stop.sh` are still supported as a fallback.
 
 ## Check Status
 
@@ -99,8 +101,8 @@ Install ComAI from a source checkout with:
 Then the helper service uses:
 
 ```bash
-~/myai/start.sh
-~/myai/stop.sh
+~/myai/bin/start.sh
+~/myai/bin/stop.sh
 ```
 
 For the full two-project explanation, see [ComAI And LocalAI](ComAI-and-LocalAI.md).
