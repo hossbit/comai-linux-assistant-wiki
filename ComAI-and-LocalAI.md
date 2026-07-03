@@ -61,8 +61,8 @@ Later, install LocalAI if you want to run GGUF models locally:
 curl -fsSL https://hossbit.github.io/localai/install.sh | bash
 ```
 
-The LocalAI 1.1.5 installer defaults to the Vulkan llama.cpp backend. For a
-CPU-only machine or simple VM test, use:
+The LocalAI installer defaults to the Vulkan llama.cpp backend. For a CPU-only
+machine or simple VM test, use:
 
 ```bash
 curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=cpu bash
@@ -233,6 +233,19 @@ localai check --chat
 localai load MODEL_NAME
 localai unload all
 ```
+
+LocalAI update and uninstall:
+
+```bash
+localai update
+localai uninstall
+```
+
+`localai uninstall` removes the LocalAI helper/runtime files, including the
+installed `bin`, `conf`, `lib`, and `logs` directories. It keeps
+`~/ai/models` by default so downloaded GGUF models are not deleted. Use
+`localai uninstall --remove-models` only when you also want to delete the model
+files.
 
 Direct API:
 
