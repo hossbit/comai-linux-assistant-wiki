@@ -125,6 +125,14 @@ COMAI_OPENAI_API_KEY_CMD='pass show openai' comai gpt hi
 
 OpenAI key lookup order is `OPENAI_API_KEY`, then `COMAI_OPENAI_API_KEY`, then `providers.openai.api_key_cmd`, then `providers.openai.api_key`.
 
+To save the command in config:
+
+```bash
+comai config set api_key_cmd "pass show openai"
+```
+
+This writes to `providers.openai.api_key_cmd`. Older configs with a top-level `api_key_cmd` are still read and are migrated during install/update.
+
 ## Command Overrides
 
 ```bash
@@ -146,6 +154,7 @@ comai config path
 comai config get provider
 comai config edit
 comai config set provider ollama
+comai config set api_key_cmd "pass show openai"
 ```
 
 <div align="center">

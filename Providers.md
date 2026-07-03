@@ -153,6 +153,12 @@ export OPENAI_API_KEY="your_api_key"
 
 Or use a command-based secret lookup:
 
+```bash
+comai config set api_key_cmd "pass show openai"
+```
+
+That stores:
+
 ```yaml
 providers:
   openai:
