@@ -13,6 +13,8 @@ This `wiki/` directory is ready for the `hossbit/comai-linux-assistant` project 
 
 The standalone repository is useful when you want normal pull requests, issues, releases, or CI for documentation. The built-in GitHub Wiki is useful when you want GitHub's Wiki tab to render these pages automatically.
 
+The main ComAI repository now runs GitHub Actions for ShellCheck, shfmt, and Bats tests. When behavior changes, update the wiki alongside the code so usage examples stay aligned with the tested release.
+
 ## Standalone Wiki Repository
 
 Create and push to:

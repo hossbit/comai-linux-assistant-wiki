@@ -126,6 +126,14 @@ ComAI masks `providers.openai.api_key` and legacy `openai_api_key` when you run:
 comai config show
 ```
 
+The installed config is also tightened to mode `600`. For better secret handling, use `OPENAI_API_KEY` or `providers.openai.api_key_cmd`, for example:
+
+```yaml
+providers:
+  openai:
+    api_key_cmd: pass show openai
+```
+
 ## OpenAI Says `429`
 
 OpenAI rejected the request because of rate limit, quota, billing, project, or credit limits. Check your OpenAI account and project settings.

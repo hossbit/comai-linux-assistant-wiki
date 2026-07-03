@@ -33,14 +33,21 @@ comai gpt review these scripts --file install.sh --file uninstall.sh
 
 ## Mentioned Files
 
-ComAI also tries to detect file names mentioned in your request:
+Use `-f`, `--file`, or `--files` when file contents should be sent to a provider. This is required for remote providers such as OpenAI, Ollama, and LM Studio.
+
+```bash
+comai gpt explain README.md -f README.md
+comai ollama explain scripts/install.sh -f scripts/install.sh
+```
+
+For the local provider only, ComAI can still detect simple filenames mentioned in your request for local file shortcuts:
 
 ```bash
 comai explain README.md
 comai explain scripts/install.sh
 ```
 
-Using `-f` is still the clearest option when accuracy matters.
+This keeps accidental file contents from being sent to remote providers just because a filename appears in the prompt.
 
 ## Scan Logs
 

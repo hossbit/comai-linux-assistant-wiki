@@ -151,7 +151,15 @@ Set your key:
 export OPENAI_API_KEY="your_api_key"
 ```
 
-Or set `providers.openai.api_key` in installed config.
+Or use a command-based secret lookup:
+
+```yaml
+providers:
+  openai:
+    api_key_cmd: pass show openai
+```
+
+You can also set `providers.openai.api_key` in installed config, but environment variables or `api_key_cmd` are safer.
 
 Run:
 
@@ -169,6 +177,7 @@ providers:
     api_base: https://api.openai.com
     model: gpt-5.5
     api_key:
+    api_key_cmd:
 ```
 
 Choose one model for one request:

@@ -28,7 +28,7 @@ Show installed config safely:
 comai config show
 ```
 
-`providers.openai.api_key` and legacy `openai_api_key` values are masked when shown.
+`providers.openai.api_key` and legacy `openai_api_key` values are masked when shown. The installed config file is tightened to mode `600` when ComAI reads or writes it.
 
 Read one value:
 
@@ -63,6 +63,7 @@ providers:
     api_base: https://api.openai.com
     model: gpt-5.5
     api_key:
+    api_key_cmd:
 
 max_tokens: 420
 timeout: 120
@@ -88,6 +89,7 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 | `providers.openai.api_base` | OpenAI API base. |
 | `providers.openai.model` | Default OpenAI model. |
 | `providers.openai.api_key` | Optional API key in config. Environment variable is safer. |
+| `providers.openai.api_key_cmd` | Optional command that prints an API key, such as `pass show openai`. |
 | `max_tokens` | Maximum requested answer length. |
 | `timeout` | Request timeout in seconds. |
 | `log_file` | Service/status log path. Relative paths are under the ComAI install directory. |
@@ -118,7 +120,10 @@ COMAI_PROVIDER=ollama comai hi
 COMAI_MODEL=qwen2.5-coder:7b comai hi
 COMAI_MAX_TOKENS=120 comai explain chmod 755
 OPENAI_API_KEY=your_api_key comai gpt hi
+COMAI_OPENAI_API_KEY_CMD='pass show openai' comai gpt hi
 ```
+
+OpenAI key lookup order is `OPENAI_API_KEY`, then `COMAI_OPENAI_API_KEY`, then `providers.openai.api_key_cmd`, then `providers.openai.api_key`.
 
 ## Command Overrides
 

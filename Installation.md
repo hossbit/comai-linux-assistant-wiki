@@ -53,8 +53,10 @@ The installer:
 - uses `~/localcomai` by default
 - creates `comai` and `comi` symlinks in `~/.local/bin`
 - creates or updates `~/localcomai/config/comai.yaml`
+- tightens the config file to mode `600`
 - creates `~/localcomai/logs/`
 - preserves existing config values when upgrading
+- refuses to update a non-empty custom install directory unless it already looks managed by ComAI
 - installs the optional LocalAI user service helper, but does not start it
 
 ## Custom Install Directory
@@ -86,6 +88,8 @@ comai update
 ```
 
 For a one-line install, `comai update` downloads the latest source and reruns the installer while preserving config values. For a git checkout, it runs a fast-forward pull.
+
+The updater uses the same safety checks as the installer. It will not overwrite an arbitrary non-empty directory that does not contain a ComAI install marker.
 
 ## Remove ComAI
 
