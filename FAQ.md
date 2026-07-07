@@ -14,6 +14,13 @@ ComAI is designed for Linux shells and Linux command-line workflows. The install
 
 No. ComAI is written in Bash and uses standard command-line tools such as `curl`, `jq`, `sed`, `awk`, and `grep`.
 
+## Does ComAI require GNU command-line tools?
+
+Yes for a few local file/status helpers. Standard Debian, Ubuntu, RHEL, Fedora,
+Rocky, AlmaLinux, and CentOS-style systems include the needed GNU tools. Minimal
+BusyBox/toybox-based containers, Alpine images, and some UBI-minimal images may
+need GNU coreutils/findutils installed first.
+
 ## Does ComAI require internet access?
 
 Not always. Local mode and Ollama mode can run locally when your models are available on the machine. OpenAI mode requires network access to the configured OpenAI-compatible API.

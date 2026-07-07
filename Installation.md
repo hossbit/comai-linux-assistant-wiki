@@ -15,14 +15,24 @@ ComAI is the client. It can use LocalAI, Ollama, LM Studio, llama.cpp server, Op
 Required commands:
 
 ```text
-bash curl jq find sort head sed awk grep wc tr readlink date systemctl
+Bash 4.2+ curl jq awk grep sed sort head wc tr readlink date
+GNU coreutils, including stat -c
+GNU findutils, including find -printf
 ```
 
 Optional commands:
 
 ```text
-file numfmt git
+file numfmt git systemctl shellcheck
 ```
+
+Standard Debian, Ubuntu, RHEL, Fedora, Rocky, AlmaLinux, and CentOS-style
+systems include GNU coreutils/findutils, so `stat -c` and `find -printf` are
+expected to work there.
+
+Minimal BusyBox/toybox-based containers, Alpine images, and some UBI-minimal
+images may not include those GNU extensions. In those environments, install GNU
+coreutils/findutils or run ComAI from a fuller Debian/RHEL userland.
 
 ## Install ComAI
 
