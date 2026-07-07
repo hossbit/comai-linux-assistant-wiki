@@ -68,6 +68,9 @@ machine or simple VM test, use:
 curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=cpu bash
 ```
 
+If a non-CPU backend installs but cannot run on the system, LocalAI retries once
+with the CPU backend by default.
+
 Add a chat model to the LocalAI models directory:
 
 ```bash
@@ -171,8 +174,11 @@ sudo dnf install -y git
 LocalAI installs its runtime dependencies with `dnf`, including:
 
 ```text
-ca-certificates curl iproute jq tar vulkan-loader
+ca-certificates curl iproute jq mesa-vulkan-drivers tar vulkan-loader
 ```
+
+On RHEL 7/8, enable EPEL first if `jq` is not available from the enabled
+repositories.
 
 For a CPU-only Fedora VM, use:
 
@@ -185,6 +191,8 @@ CPU installs use:
 ```text
 LOCALAI_N_GPU_LAYERS=0
 LOCALAI_CTX_SIZE=4096
+LOCALAI_FLASH_ATTN=0
+LOCALAI_PARALLEL=1
 ```
 
 CPU mode is useful for compatibility testing, but larger models may be slow.
