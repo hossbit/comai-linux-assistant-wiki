@@ -64,6 +64,44 @@ comai models local
 
 Set `providers.local.model` to one of those model IDs, or add the matching model to your local provider.
 
+## LocalAI Split GGUF Warning
+
+If `localai check`, `localai models`, or `localai start` says a file looks like
+a split GGUF fragment but does not match canonical llama.cpp split naming, the
+file was skipped instead of being registered as a broken model.
+
+Use canonical shard names and keep all shards in one directory:
+
+```text
+name-00001-of-00003.gguf
+name-00002-of-00003.gguf
+name-00003-of-00003.gguf
+```
+
+For many split models, use one folder per model:
+
+```text
+~/ai/models/model-name/
+  model-name-00001-of-00003.gguf
+  model-name-00002-of-00003.gguf
+  model-name-00003-of-00003.gguf
+```
+
+Or merge shards into one GGUF:
+
+```bash
+llama-gguf-split --merge FIRST_SHARD.gguf OUTPUT.gguf
+```
+
+Then rebuild/restart:
+
+```bash
+localai start
+localai models
+```
+
+Use `localai suggest` to check model size against detected RAM/VRAM.
+
 ## Ollama Cannot Be Reached
 
 ```bash
