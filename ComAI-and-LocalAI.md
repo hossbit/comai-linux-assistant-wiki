@@ -38,6 +38,8 @@ you want to run GGUF models locally through a local OpenAI-compatible API.
 For LocalAI install options, backend selection, service commands, and model
 management, see [Local AI Service](Local-AI-Service.md).
 
+This page is for users who install both projects. If you only use LocalAI, you can ignore ComAI commands and use [Local AI Service](Local-AI-Service.md) directly.
+
 ## Install Order
 
 Both install orders are valid.
@@ -138,4 +140,78 @@ contains `bin/start.sh` and `bin/stop.sh`:
 systemctl --user enable --now comai-localai.service
 ```
 
-For helper service details, see [Local AI Service](Local-AI-Service.md).
+## Check Through ComAI
+
+After LocalAI is running and ComAI is configured, check the integration from the ComAI side:
+
+```bash
+comai status local
+comai provider
+comai models local
+comai ask "Reply with OK"
+```
+
+These commands verify that ComAI can reach the local OpenAI-compatible API and that the configured model name matches what LocalAI exposes.
+
+## ComAI Local Provider Config
+
+Normal ComAI local provider config:
+
+```yaml
+providers:
+  local:
+    api_base: http://127.0.0.1:11435
+    model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+```
+
+Optional LocalAI helper directory:
+
+```yaml
+ai_dir: ~/ai
+```
+
+`ai_dir` only controls the optional ComAI start/stop helper. It does not choose the API endpoint or model for normal local requests.
+
+## Optional ComAI Helper Details
+
+When enabled, `comai-localai.service` calls the LocalAI helper scripts in the configured `ai_dir`:
+
+```bash
+systemctl --user start comai-localai.service
+systemctl --user stop comai-localai.service
+systemctl --user restart comai-localai.service
+```
+
+If the service file is not installed, ComAI falls back to:
+
+```bash
+~/ai/bin/start.sh
+~/ai/bin/stop.sh
+```
+
+Older LocalAI installs with `~/ai/start.sh` and `~/ai/stop.sh` are still supported as a fallback.
+
+For a custom LocalAI directory when installing ComAI from source:
+
+```bash
+./scripts/install.sh --ai-dir ~/myai
+```
+
+Then the helper service uses:
+
+```bash
+~/myai/bin/start.sh
+~/myai/bin/stop.sh
+```
+
+ComAI service and provider events are written under the ComAI install directory:
+
+```bash
+~/localcomai/logs/comai.log
+```
+
+Watch logs:
+
+```bash
+tail -f ~/localcomai/logs/comai.log
+```
