@@ -101,6 +101,8 @@ For a one-line install, `comai update` downloads the latest source and reruns th
 
 The updater uses the same safety checks as the installer. It will not overwrite an arbitrary non-empty directory that does not contain a ComAI install marker.
 
+ComAI updates are layout-safe. The installer refreshes the installed `bin/`, `lib/`, and `scripts/` directories recursively, so releases such as ComAI 2.4.0 that split the CLI into `lib/comai/cli/` modules do not require uninstalling first.
+
 ## Remove ComAI
 
 ```bash

@@ -21,6 +21,8 @@ Default install:
 curl -fsSL https://hossbit.github.io/localai/install.sh | bash
 ```
 
+The public installer is served from `https://hossbit.github.io/localai/install.sh`. The LocalAI source repository keeps the project installer at the repository root and does not need a duplicate `site/localai` copy.
+
 CPU-only install for simple VMs, older machines, or systems without a supported
 GPU backend:
 
@@ -172,7 +174,10 @@ Quantization tradeoffs:
 | Q6_K/Q8_0 | Higher quality, more memory |
 
 Use `localai suggest` after adding large models to get advisory runtime settings
-based on your installed models, RAM, backend, and detected GPU memory.
+based on your installed models, RAM, backend, and detected GPU memory. The
+advisor uses the actual GGUF file size as the base estimate, not an exact
+parameter-count formula. Runtime memory also depends on context length, KV
+cache type, batch size, backend buffers, and operating-system headroom.
 
 ### Split GGUF Models
 
@@ -385,6 +390,12 @@ LocalAI update and uninstall:
 localai update
 localai uninstall
 ```
+
+LocalAI 1.2.3 and newer updates are layout-safe. The updater copies the
+installed `lib/` tree recursively, so future internal structure changes do not
+require uninstalling an older release first. If an older update leaves split CLI
+modules missing, `localai` attempts a one-time repair with the installed direct
+updater before failing.
 
 `localai uninstall` removes the LocalAI helper/runtime files, including the
 installed `bin`, `conf`, `lib`, and `logs` directories. It keeps
