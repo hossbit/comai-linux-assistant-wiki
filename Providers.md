@@ -6,7 +6,7 @@
   </a>
 </div>
 
-ComAI supports four provider modes: local OpenAI-compatible APIs, Ollama, LM Studio, and OpenAI.
+ComAI supports five provider modes: local OpenAI-compatible APIs, Ollama, LM Studio, OpenAI, and Gemini.
 
 LocalAI is one optional local provider. ComAI can also use llama.cpp server or any other local API that exposes OpenAI-compatible `/v1/models` and `/v1/chat/completions` endpoints.
 
@@ -25,10 +25,12 @@ comai status local
 comai status ollama
 comai status lmstudio
 comai status openai
+comai status gemini
 comai models local
 comai models ollama
 comai models lmstudio
 comai models openai
+comai models gemini
 ```
 
 ## Provider Selection
@@ -45,6 +47,8 @@ comai models openai
 | `comai gpt hi` | OpenAI |
 | `comai chatgpt hi` | OpenAI |
 | `comai --gpt hi` | OpenAI |
+| `comai gemini hi` | Gemini |
+| `comai --gemini hi` | Gemini |
 | `COMAI_PROVIDER=lmstudio comai hi` | LM Studio |
 
 ## Local Provider
@@ -181,7 +185,7 @@ Default config:
 providers:
   openai:
     api_base: https://api.openai.com
-    model: gpt-5.5
+    model: gpt-4o-mini
     api_key:
     api_key_cmd:
 ```
@@ -189,10 +193,59 @@ providers:
 Choose one model for one request:
 
 ```bash
-comai gpt --model=gpt-5.1-chat-latest hi
+comai gpt --model=gpt-4o-mini hi
 ```
 
 Model self-identification is not reliable. Use `comai models openai` and your command/config to know which model was requested.
+
+## Gemini
+
+Set your key:
+
+```bash
+export GEMINI_API_KEY="your_api_key"
+```
+
+Or use a command-based secret lookup:
+
+```bash
+comai config set gemini.api_key_cmd "pass show gemini"
+```
+
+That stores:
+
+```yaml
+providers:
+  gemini:
+    api_key_cmd: pass show gemini
+```
+
+You can also set `providers.gemini.api_key` in installed config, but environment variables or `api_key_cmd` are safer.
+
+Run:
+
+```bash
+comai gemini hi
+comai gemini explain chmod 755
+comai gemini summarize this file -f README.md
+```
+
+Default config:
+
+```yaml
+providers:
+  gemini:
+    api_base: https://generativelanguage.googleapis.com
+    model: gemini-2.5-flash
+    api_key:
+    api_key_cmd:
+```
+
+Choose one model for one request:
+
+```bash
+comai gemini --model=gemini-2.5-pro hi
+```
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">

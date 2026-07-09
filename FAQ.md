@@ -75,7 +75,8 @@ comai gpt hi
 comai --model=MODEL_NAME hi
 comai ollama --model=qwen2.5-coder:7b hi
 comai lmstudio --model=qwen/qwen3.5-9b hi
-comai gpt --model=gpt-5.5 hi
+comai gpt --model=gpt-4o-mini hi
+comai gemini --model=gemini-2.5-pro hi
 ```
 
 ## Does ComAI change files it analyzes?

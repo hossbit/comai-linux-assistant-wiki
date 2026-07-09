@@ -16,7 +16,7 @@ comai provider
 comai models
 ```
 
-`status` shows local, Ollama, LM Studio, and OpenAI provider connections. The active provider is marked with `(active)`.
+`status` shows local, Ollama, LM Studio, OpenAI, and Gemini provider connections. The active provider is marked with `(active)`.
 
 ## Ask Linux Questions
 
@@ -41,6 +41,7 @@ comai hi             # default provider from config
 comai ollama hi      # Ollama
 comai lmstudio hi    # LM Studio
 comai gpt hi         # OpenAI
+comai gemini hi      # Gemini
 ```
 
 ## Analyze Files
@@ -66,7 +67,8 @@ comai is this healthy? -f service.log
 comai --model=Qwen2.5-7B-Instruct-Q4_K_M hi
 comai ollama --model=qwen2.5-coder:7b hi
 comai lmstudio --model=qwen/qwen3.5-9b hi
-comai gpt --model=gpt-5.5 hi
+comai gpt --model=gpt-4o-mini hi
+comai gemini --model=gemini-2.5-pro hi
 ```
 
 ## Override Request Limits Once

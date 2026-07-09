@@ -37,6 +37,7 @@ comai gpt hi
 | Ollama | Use local Ollama models with `comai ollama ...`. |
 | LM Studio | Use LM Studio with `comai lmstudio ...`. |
 | OpenAI | Use OpenAI models with `comai gpt ...`. |
+| Gemini | Use Gemini models with `comai gemini ...`. |
 
 ## Main Pages
 

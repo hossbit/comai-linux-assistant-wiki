@@ -39,7 +39,7 @@ comai config get provider
 ## Current Config Example
 
 ```yaml
-# Default provider. Use "local", "ollama", "lmstudio", or "openai".
+# Default provider. Use "local", "ollama", "lmstudio", "openai", or "gemini".
 provider: local
 
 # Optional LocalAI helper directory. This is only used by the start/stop helper service.
@@ -61,11 +61,17 @@ providers:
 
   openai:
     api_base: https://api.openai.com
-    model: gpt-5.5
+    model: gpt-4o-mini
     api_key:
     api_key_cmd:
 
-max_tokens: 420
+  gemini:
+    api_base: https://generativelanguage.googleapis.com
+    model: gemini-2.5-flash
+    api_key:
+    api_key_cmd:
+
+max_tokens: 900
 timeout: 120
 log_file: logs/comai.log
 file_max_bytes: 24000
@@ -78,7 +84,7 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 
 | Key | Purpose |
 | --- | --- |
-| `provider` | Default provider: `local`, `ollama`, `lmstudio`, or `openai`. |
+| `provider` | Default provider: `local`, `ollama`, `lmstudio`, `openai`, or `gemini`. |
 | `ai_dir` | Optional LocalAI helper directory for `comai start`, `stop`, and `restart`. |
 | `providers.local.api_base` | OpenAI-compatible local API base. |
 | `providers.local.model` | Default local OpenAI-compatible model. |
@@ -87,9 +93,13 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 | `providers.lmstudio.api_base` | LM Studio local server base URL. |
 | `providers.lmstudio.model` | Default LM Studio model. |
 | `providers.openai.api_base` | OpenAI API base. |
-| `providers.openai.model` | Default OpenAI model. |
+| `providers.openai.model` | Default OpenAI model, such as `gpt-4o-mini`. |
 | `providers.openai.api_key` | Optional API key in config. Environment variable is safer. |
 | `providers.openai.api_key_cmd` | Optional command that prints an API key, such as `pass show openai`. |
+| `providers.gemini.api_base` | Gemini API base. |
+| `providers.gemini.model` | Default Gemini model, such as `gemini-2.5-flash`. |
+| `providers.gemini.api_key` | Optional API key in config. Environment variable is safer. |
+| `providers.gemini.api_key_cmd` | Optional command that prints an API key, such as `pass show gemini`. |
 | `max_tokens` | Maximum requested answer length. |
 | `timeout` | Request timeout in seconds. |
 | `log_file` | Service/status log path. Relative paths are under the ComAI install directory. |
@@ -121,9 +131,13 @@ COMAI_MODEL=qwen2.5-coder:7b comai hi
 COMAI_MAX_TOKENS=120 comai explain chmod 755
 OPENAI_API_KEY=your_api_key comai gpt hi
 COMAI_OPENAI_API_KEY_CMD='pass show openai' comai gpt hi
+GEMINI_API_KEY=your_api_key comai gemini hi
+COMAI_GEMINI_API_KEY_CMD='pass show gemini' comai gemini hi
 ```
 
 OpenAI key lookup order is `OPENAI_API_KEY`, then `COMAI_OPENAI_API_KEY`, then `providers.openai.api_key_cmd`, then `providers.openai.api_key`.
+
+Gemini key lookup order is `GEMINI_API_KEY`, then `COMAI_GEMINI_API_KEY`, then `providers.gemini.api_key_cmd`, then `providers.gemini.api_key`.
 
 To save the command in config:
 
