@@ -241,6 +241,14 @@ localai check
 localai models
 ```
 
+`localai check` verifies the process, port, and API model list. Add `--chat`
+to also round-trip a real chat completion against the first non-embedding
+model, which confirms the model loads and generates:
+
+```bash
+localai check --chat
+```
+
 Manual API check:
 
 ```bash
@@ -313,7 +321,7 @@ localai update
 localai uninstall
 ```
 
-LocalAI 1.2.3 and newer updates are layout-safe. The updater copies the
+LocalAI 1.2.4 and newer updates are layout-safe. The updater copies the
 installed `lib/` tree recursively, so future internal structure changes do not
 require uninstalling an older release first. If an older update leaves split CLI
 modules missing, `localai` attempts a one-time repair with the installed direct
