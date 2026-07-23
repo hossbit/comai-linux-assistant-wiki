@@ -39,7 +39,7 @@ comai config get provider
 ## Current Config Example
 
 ```yaml
-# Default provider. Use "local", "ollama", "lmstudio", "openai", or "gemini".
+# Default provider. Use "local", "ollama", "lmstudio", "openai", "gemini", or "openrouter".
 provider: local
 
 # Optional LocalAI helper directory. This is only used by the start/stop helper service.
@@ -71,6 +71,12 @@ providers:
     api_key:
     api_key_cmd:
 
+  openrouter:
+    api_base: https://openrouter.ai/api
+    model: openrouter/auto
+    api_key:
+    api_key_cmd:
+
 max_tokens: 900
 timeout: 120
 log_file: logs/comai.log
@@ -84,7 +90,7 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 
 | Key | Purpose |
 | --- | --- |
-| `provider` | Default provider: `local`, `ollama`, `lmstudio`, `openai`, or `gemini`. |
+| `provider` | Default provider: `local`, `ollama`, `lmstudio`, `openai`, `gemini`, or `openrouter`. |
 | `ai_dir` | Optional LocalAI helper directory for `comai start`, `stop`, and `restart`. |
 | `providers.local.api_base` | OpenAI-compatible local API base. |
 | `providers.local.model` | Default local OpenAI-compatible model. |
@@ -100,6 +106,10 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 | `providers.gemini.model` | Default Gemini model, such as `gemini-2.5-flash`. |
 | `providers.gemini.api_key` | Optional API key in config. Environment variable is safer. |
 | `providers.gemini.api_key_cmd` | Optional command that prints an API key, such as `pass show gemini`. |
+| `providers.openrouter.api_base` | OpenRouter API base. |
+| `providers.openrouter.model` | Default OpenRouter model, such as `openrouter/auto` or `anthropic/claude-sonnet-4.5`. |
+| `providers.openrouter.api_key` | Optional API key in config. Environment variable is safer. |
+| `providers.openrouter.api_key_cmd` | Optional command that prints an API key, such as `pass show openrouter`. |
 | `max_tokens` | Maximum requested answer length. |
 | `timeout` | Request timeout in seconds. |
 | `log_file` | Service/status log path. Relative paths are under the ComAI install directory. |
@@ -133,11 +143,25 @@ OPENAI_API_KEY=your_api_key comai gpt hi
 COMAI_OPENAI_API_KEY_CMD='pass show openai' comai gpt hi
 GEMINI_API_KEY=your_api_key comai gemini hi
 COMAI_GEMINI_API_KEY_CMD='pass show gemini' comai gemini hi
+OPENROUTER_API_KEY=your_api_key comai opr hi
+COMAI_OPENROUTER_API_KEY_CMD='pass show openrouter' comai opr hi
 ```
 
 OpenAI key lookup order is `OPENAI_API_KEY`, then `COMAI_OPENAI_API_KEY`, then `providers.openai.api_key_cmd`, then `providers.openai.api_key`.
 
 Gemini key lookup order is `GEMINI_API_KEY`, then `COMAI_GEMINI_API_KEY`, then `providers.gemini.api_key_cmd`, then `providers.gemini.api_key`.
+
+OpenRouter key lookup order is `OPENROUTER_API_KEY`, then `COMAI_OPENROUTER_API_KEY`, then `providers.openrouter.api_key_cmd`, then `providers.openrouter.api_key`.
+
+## Output Colors
+
+`comai status`, `comai provider`, and `comai models` colorize connection/status text (green for ok, yellow for a deferred key check, red for failures) when standard output is a real terminal.
+
+```bash
+NO_COLOR=1 comai status      # disable color
+COMAI_COLOR=1 comai status   # force color, even when piped
+COMAI_COLOR=0 comai status   # force plain text
+```
 
 To save the command in config:
 

@@ -6,7 +6,7 @@
   </a>
 </div>
 
-ComAI supports five provider modes: local OpenAI-compatible APIs, Ollama, LM Studio, OpenAI, and Gemini.
+ComAI supports six provider modes: local OpenAI-compatible APIs, Ollama, LM Studio, OpenAI, Gemini, and OpenRouter.
 
 LocalAI is one optional local provider. ComAI can also use llama.cpp server or any other local API that exposes OpenAI-compatible `/v1/models` and `/v1/chat/completions` endpoints.
 
@@ -26,11 +26,20 @@ comai status ollama
 comai status lmstudio
 comai status openai
 comai status gemini
+comai status openrouter
 comai models local
 comai models ollama
 comai models lmstudio
 comai models openai
 comai models gemini
+comai models openrouter
+```
+
+`comai models` and `comai status` accept `all` explicitly (`comai models all`) and default to `all` when no provider is given. Cloud provider catalogs, especially OpenRouter, can list hundreds of models — narrow the list with `--filter`:
+
+```bash
+comai models openrouter --filter claude
+comai models all --filter gemini
 ```
 
 ## Provider Selection
@@ -49,6 +58,9 @@ comai models gemini
 | `comai --gpt hi` | OpenAI |
 | `comai gemini hi` | Gemini |
 | `comai --gemini hi` | Gemini |
+| `comai opr hi` | OpenRouter |
+| `comai openrouter hi` | OpenRouter |
+| `comai --opr hi` | OpenRouter |
 | `COMAI_PROVIDER=lmstudio comai hi` | LM Studio |
 
 ## Local Provider
@@ -246,6 +258,60 @@ Choose one model for one request:
 ```bash
 comai gemini --model=gemini-2.5-pro hi
 ```
+
+## OpenRouter
+
+OpenRouter is a unified API that routes to many hosted models, including OpenAI, Anthropic, Google, and open-weight models, through one API key.
+
+Set your key:
+
+```bash
+export OPENROUTER_API_KEY="your_api_key"
+```
+
+Or use a command-based secret lookup:
+
+```bash
+comai config set providers.openrouter.api_key_cmd "pass show openrouter"
+```
+
+That stores:
+
+```yaml
+providers:
+  openrouter:
+    api_key_cmd: pass show openrouter
+```
+
+You can also set `providers.openrouter.api_key` in installed config, but environment variables or `api_key_cmd` are safer.
+
+Run:
+
+```bash
+comai opr hi
+comai openrouter hi
+comai opr explain chmod 755
+comai opr summarize this file -f README.md
+```
+
+Default config:
+
+```yaml
+providers:
+  openrouter:
+    api_base: https://openrouter.ai/api
+    model: openrouter/auto
+    api_key:
+    api_key_cmd:
+```
+
+Choose one model for one request:
+
+```bash
+comai opr --model=anthropic/claude-sonnet-4.5 hi
+```
+
+The default model, `openrouter/auto`, lets OpenRouter pick a different underlying model for each request. Model self-identification is not reliable, and `auto` makes it worse since the answering model can change between requests. Use `comai models openrouter --filter TEXT` to search the catalog and pin a specific model in config for consistent results.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">

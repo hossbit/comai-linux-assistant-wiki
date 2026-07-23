@@ -69,6 +69,15 @@ export OPENAI_API_KEY="your_api_key"
 comai gpt hi
 ```
 
+## Can I use OpenRouter without LocalAI?
+
+Yes. Set an API key and run:
+
+```bash
+export OPENROUTER_API_KEY="your_api_key"
+comai opr hi
+```
+
 ## How do I use a different model once?
 
 ```bash
@@ -77,6 +86,7 @@ comai ollama --model=qwen2.5-coder:7b hi
 comai lmstudio --model=qwen/qwen3.5-9b hi
 comai gpt --model=gpt-4o-mini hi
 comai gemini --model=gemini-2.5-pro hi
+comai opr --model=anthropic/claude-sonnet-4.5 hi
 ```
 
 ## Does ComAI change files it analyzes?

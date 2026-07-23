@@ -16,7 +16,7 @@ comai provider
 comai models
 ```
 
-`status` shows local, Ollama, LM Studio, OpenAI, and Gemini provider connections. The active provider is marked with `(active)`.
+`status` shows local, Ollama, LM Studio, OpenAI, Gemini, and OpenRouter provider connections. The active provider is marked with `(active)`.
 
 ## Ask Linux Questions
 
@@ -42,6 +42,7 @@ comai ollama hi      # Ollama
 comai lmstudio hi    # LM Studio
 comai gpt hi         # OpenAI
 comai gemini hi      # Gemini
+comai opr hi         # OpenRouter
 ```
 
 ## Analyze Files
@@ -69,6 +70,13 @@ comai ollama --model=qwen2.5-coder:7b hi
 comai lmstudio --model=qwen/qwen3.5-9b hi
 comai gpt --model=gpt-4o-mini hi
 comai gemini --model=gemini-2.5-pro hi
+comai opr --model=anthropic/claude-sonnet-4.5 hi
+```
+
+OpenRouter hosts hundreds of models. Search its catalog before picking one:
+
+```bash
+comai models openrouter --filter claude
 ```
 
 ## Override Request Limits Once

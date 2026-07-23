@@ -20,6 +20,7 @@
 - [Use Ollama](Providers.md#ollama)
 - [Use LM Studio](Providers.md#lm-studio)
 - [Use OpenAI](Providers.md#openai)
+- [Use OpenRouter](Providers.md#openrouter)
 - [Analyze a File](File-and-Log-Analysis.md#analyze-files)
 - [Scan Logs](File-and-Log-Analysis.md#scan-logs)
 - [Remove ComAI](Uninstall.md)

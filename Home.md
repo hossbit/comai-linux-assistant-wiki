@@ -23,6 +23,7 @@ comai do you see any error? -f application.log
 comai ollama hi
 comai lmstudio hi
 comai gpt hi
+comai opr hi
 ```
 
 ## What ComAI Does
@@ -38,6 +39,7 @@ comai gpt hi
 | LM Studio | Use LM Studio with `comai lmstudio ...`. |
 | OpenAI | Use OpenAI models with `comai gpt ...`. |
 | Gemini | Use Gemini models with `comai gemini ...`. |
+| OpenRouter | Use OpenRouter models with `comai opr ...`. |
 
 ## Main Pages
 
