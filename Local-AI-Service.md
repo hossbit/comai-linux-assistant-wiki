@@ -285,11 +285,12 @@ generation refuse to produce an unauthenticated config at all.
 
 Creating, revoking, or rotating a key restarts the running service, the same
 way changing a model does. Keys are stored in `conf/api-keys.tsv`, outside
-Git, mode `600`; `conf/config.yaml` is also `600` once it can contain a
-plaintext key. Each key is written to `config.yaml` with a `# name` comment
-above it (taken from its `api-keys.tsv` label), so the file stays
-identifiable with several keys active — you still only manage keys through
-`localai key ...`, never by hand-editing `config.yaml`.
+Git, mode `600`. Active keys are also rendered into `conf/keys.d/keys.yaml`
+(mode `600`), each with a `# name` comment taken from its `api-keys.tsv`
+label, and merged into the running config via llama-swap's `--config-dir` —
+`conf/config.yaml` itself never contains a plaintext key. `keys.yaml` is
+removed entirely once no keys are active. You still only manage keys through
+`localai key ...`, never by hand-editing either file.
 
 Using ComAI's `local` provider against a key-protected LocalAI? See
 [Securing LocalAI With API Keys](ComAI-and-LocalAI.md#securing-localai-with-api-keys).
@@ -379,6 +380,27 @@ llama-server rebuild or extra flags required:
 
 ```bash
 curl -s http://127.0.0.1:11435/metrics
+```
+
+If you have [API keys](#api-keys) active, `/metrics` requires the same
+`Authorization: Bearer` header as every other endpoint — llama-swap doesn't
+carve out an exception for it:
+
+```bash
+curl -s http://127.0.0.1:11435/metrics \
+  -H "Authorization: Bearer sk-localai-REPLACE_ME"
+```
+
+llama-swap has no HTTP Basic Auth support (only Bearer `apiKeys`), so point
+Prometheus at a key with `bearer_token` (or `bearer_token_file` to avoid
+putting the secret in the scrape config itself):
+
+```yaml
+scrape_configs:
+  - job_name: localai
+    bearer_token: sk-localai-REPLACE_ME
+    static_configs:
+      - targets: ["127.0.0.1:11435"]
 ```
 
 llama-swap ships a [ready-made Grafana
