@@ -51,13 +51,19 @@ comai models all --filter gemini
 | `comai --local hi` | local OpenAI-compatible provider |
 | `comai ollama hi` | Ollama |
 | `comai --ollama hi` | Ollama |
+| `comai olm hi` | Ollama |
+| `comai --olm hi` | Ollama |
 | `comai lmstudio hi` | LM Studio |
 | `comai --lmstudio hi` | LM Studio |
+| `comai lms hi` | LM Studio |
+| `comai --lms hi` | LM Studio |
 | `comai gpt hi` | OpenAI |
 | `comai chatgpt hi` | OpenAI |
 | `comai --gpt hi` | OpenAI |
 | `comai gemini hi` | Gemini |
 | `comai --gemini hi` | Gemini |
+| `comai gem hi` | Gemini |
+| `comai --gem hi` | Gemini |
 | `comai opr hi` | OpenRouter |
 | `comai openrouter hi` | OpenRouter |
 | `comai --opr hi` | OpenRouter |
@@ -118,6 +124,8 @@ comai ollama explain chmod 755
 comai ollama summarize this file -f README.md
 ```
 
+`olm` is a short alias for `ollama`: `comai olm hi`.
+
 Default config:
 
 ```yaml
@@ -156,6 +164,8 @@ Run:
 comai lmstudio hi
 comai lmstudio --model=qwen/qwen3.5-9b hi
 ```
+
+`lms` is a short alias for `lmstudio`: `comai lms hi`. This is a ComAI provider alias, unrelated to the `lms` command from LM Studio's own CLI used above to start the server.
 
 Some reasoning models may return `reasoning_content` before normal `content`. If ComAI reports an empty LM Studio response, try a non-reasoning chat model, increase `--max-tokens`, or disable thinking in LM Studio for that model.
 
@@ -241,6 +251,8 @@ comai gemini hi
 comai gemini explain chmod 755
 comai gemini summarize this file -f README.md
 ```
+
+`gem` is a short alias for `gemini`: `comai gem hi`.
 
 Default config:
 
