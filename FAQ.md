@@ -78,6 +78,14 @@ export OPENROUTER_API_KEY="your_api_key"
 comai opr hi
 ```
 
+## Does the local provider need an API key?
+
+No, not by default. LocalAI and most local OpenAI-compatible servers are
+unauthenticated out of the box, and ComAI's `local` provider works fine
+without any key configured. If you turn on LocalAI's optional API keys
+(`localai key create`), give ComAI the same key — see
+[Securing LocalAI With API Keys](ComAI-and-LocalAI.md#securing-localai-with-api-keys).
+
 ## How do I use a different model once?
 
 ```bash

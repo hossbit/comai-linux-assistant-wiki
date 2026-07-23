@@ -255,6 +255,46 @@ Manual API check:
 curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
 ```
 
+## API Keys
+
+By default LocalAI has no authentication, matching llama-swap's own default —
+fine as long as it only listens on `127.0.0.1` (the default). If you plan to
+reach it from another machine on your LAN, create a key first:
+
+```bash
+localai key create work-laptop
+localai key list
+localai key revoke KEY_ID
+localai key rotate KEY_ID
+```
+
+`create` and `rotate` print the full secret exactly once, right after it
+becomes active — save it immediately, it cannot be shown again. `list` only
+ever shows a masked fingerprint.
+
+Once at least one key is active, every request needs it:
+
+```bash
+curl http://127.0.0.1:11435/v1/models \
+  -H "Authorization: Bearer sk-localai-REPLACE_ME"
+```
+
+Revoking the last active key returns to unauthenticated behavior, unless
+`LOCALAI_REQUIRE_API_KEY=1` is set (see the table below), which makes config
+generation refuse to produce an unauthenticated config at all.
+
+Creating, revoking, or rotating a key restarts the running service, the same
+way changing a model does. Keys are stored in `conf/api-keys.tsv`, outside
+Git, mode `600`; `conf/config.yaml` is also `600` once it can contain a
+plaintext key.
+
+Using ComAI's `local` provider against a key-protected LocalAI? See
+[Securing LocalAI With API Keys](ComAI-and-LocalAI.md#securing-localai-with-api-keys).
+
+API keys authenticate requests; they don't encrypt them. For LAN/WAN access,
+put a TLS-terminating reverse proxy in front and restrict it with a
+firewall.
+
 ## LocalAI Configuration
 
 Installed LocalAI defaults live in:
@@ -293,6 +333,8 @@ Useful tuning variables:
 | `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). |
 | `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. |
 | `LOCALAI_MODELS_OVERRIDE_SUBDIR` | Subdirectory name for per-model override files. Default `models.d`. See [Per-Model Overrides](#per-model-overrides). |
+| `LOCALAI_API_KEY_FILE` | Key registry filename under `conf/`. Default `api-keys.tsv`. See [API Keys](#api-keys). |
+| `LOCALAI_REQUIRE_API_KEY` | `1` refuses to generate a config with zero active keys, so auth can never be silently disabled. Default `0`. See [API Keys](#api-keys). |
 
 ## Auto-Tuning
 
@@ -416,6 +458,8 @@ localai check
 localai check --chat
 localai load MODEL_NAME
 localai unload all
+localai key create
+localai key list
 ```
 
 LocalAI update and uninstall:

@@ -50,6 +50,8 @@ providers:
   local:
     api_base: http://127.0.0.1:11435
     model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+    api_key:
+    api_key_cmd:
 
   ollama:
     api_base: http://127.0.0.1:11434
@@ -94,6 +96,8 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 | `ai_dir` | Optional LocalAI helper directory for `comai start`, `stop`, and `restart`. |
 | `providers.local.api_base` | OpenAI-compatible local API base. |
 | `providers.local.model` | Default local OpenAI-compatible model. |
+| `providers.local.api_key` | Optional API key, only needed if the local server has active keys (e.g. LocalAI after `localai key create`). Blank by default; unauthenticated works fine without it. |
+| `providers.local.api_key_cmd` | Optional command that prints a local-server API key, such as `pass show localai`. |
 | `providers.ollama.api_base` | Ollama API base. |
 | `providers.ollama.model` | Default Ollama model. |
 | `providers.lmstudio.api_base` | LM Studio local server base URL. |
@@ -139,6 +143,8 @@ If both flat keys and provider-section keys exist, the flat key is kept for comp
 COMAI_PROVIDER=ollama comai hi
 COMAI_MODEL=qwen2.5-coder:7b comai hi
 COMAI_MAX_TOKENS=120 comai explain chmod 755
+LOCALAI_API_KEY=your_api_key comai hi
+COMAI_LOCAL_API_KEY_CMD='pass show localai' comai hi
 OPENAI_API_KEY=your_api_key comai gpt hi
 COMAI_OPENAI_API_KEY_CMD='pass show openai' comai gpt hi
 GEMINI_API_KEY=your_api_key comai gemini hi
@@ -146,6 +152,8 @@ COMAI_GEMINI_API_KEY_CMD='pass show gemini' comai gemini hi
 OPENROUTER_API_KEY=your_api_key comai opr hi
 COMAI_OPENROUTER_API_KEY_CMD='pass show openrouter' comai opr hi
 ```
+
+Local key lookup order is `LOCALAI_API_KEY`, then `COMAI_LOCAL_API_KEY`, then `providers.local.api_key_cmd`, then `providers.local.api_key` — but unlike the other providers, finding nothing is not an error. The local provider works completely unauthenticated when none of these are set, which is the default.
 
 OpenAI key lookup order is `OPENAI_API_KEY`, then `COMAI_OPENAI_API_KEY`, then `providers.openai.api_key_cmd`, then `providers.openai.api_key`.
 

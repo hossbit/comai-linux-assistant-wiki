@@ -162,7 +162,11 @@ providers:
   local:
     api_base: http://127.0.0.1:11435
     model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+    api_key:
+    api_key_cmd:
 ```
+
+`api_key`/`api_key_cmd` are optional and blank by default — see [Securing LocalAI With API Keys](#securing-localai-with-api-keys).
 
 Optional LocalAI helper directory:
 
@@ -171,6 +175,55 @@ ai_dir: ~/ai
 ```
 
 `ai_dir` only controls the optional ComAI start/stop helper. It does not choose the API endpoint or model for normal local requests.
+
+## Securing LocalAI With API Keys
+
+LocalAI is unauthenticated by default. If you turn on its optional API keys
+(see [Local AI Service](Local-AI-Service.md#api-keys)), ComAI's `local`
+provider needs to know the key too, or every request fails with `401
+Unauthorized`.
+
+Create a key on the LocalAI side:
+
+```bash
+localai key create
+```
+
+Save the printed secret — it is shown only once — then give it to ComAI. Any
+one of these works, checked in this order:
+
+```bash
+# 1. Environment variable, highest priority
+export LOCALAI_API_KEY="sk-localai-REPLACE_ME"
+
+# 2. A command that prints the key, stored in config
+comai config set providers.local.api_key_cmd "pass show localai"
+
+# 3. The key itself, stored in config
+comai config set providers.local.api_key "sk-localai-REPLACE_ME"
+```
+
+Option 3 stores the secret in plain text in `~/localcomai/config/comai.yaml`
+(mode `600`). Options 1 and 2 keep it out of the config file.
+
+Confirm it works:
+
+```bash
+comai status local
+comai ask "Reply with OK"
+```
+
+If you forget this step after creating a key, ComAI reports it clearly
+instead of a generic connection failure:
+
+```text
+comai: Local provider API at http://127.0.0.1:11435 returned 401 Unauthorized.
+comai: Set providers.local.api_key in ~/localcomai/config/comai.yaml, or export LOCALAI_API_KEY.
+```
+
+Revoking every active key on the LocalAI side returns both sides to
+unauthenticated behavior; there is nothing to undo in ComAI's config, though
+you may want to blank the stored `api_key` too.
 
 ## Optional ComAI Helper Details
 

@@ -90,7 +90,25 @@ providers:
   local:
     api_base: http://127.0.0.1:11435
     model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
+    api_key:
+    api_key_cmd:
 ```
+
+`api_key`/`api_key_cmd` are optional and blank by default — a local server
+with no active keys (the default) works completely unauthenticated. Only set
+one if your server requires auth (for example after `localai key create`):
+
+```bash
+export LOCALAI_API_KEY="your_api_key"
+```
+
+Or use a command-based secret lookup:
+
+```bash
+comai config set providers.local.api_key_cmd "pass show localai"
+```
+
+See [Securing LocalAI With API Keys](ComAI-and-LocalAI.md#securing-localai-with-api-keys) for the full walkthrough, including the 401 error message if you forget.
 
 Examples:
 

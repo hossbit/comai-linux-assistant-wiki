@@ -54,6 +54,33 @@ providers:
     model: Qwen2.5-Coder-7B-Instruct-Q4_K_M
 ```
 
+## Local Provider Says 401 Unauthorized
+
+```text
+comai: Local provider API at http://127.0.0.1:11435 returned 401 Unauthorized.
+comai: Set providers.local.api_key in ~/localcomai/config/comai.yaml, or export LOCALAI_API_KEY.
+```
+
+This means the server is reachable, but it now requires an API key (for
+example, someone ran `localai key create`) and ComAI doesn't have a working
+one configured. Set one:
+
+```bash
+export LOCALAI_API_KEY="sk-localai-REPLACE_ME"
+# or
+comai config set providers.local.api_key_cmd "pass show localai"
+# or
+comai config set providers.local.api_key "sk-localai-REPLACE_ME"
+```
+
+Then confirm:
+
+```bash
+comai status local
+```
+
+See [Securing LocalAI With API Keys](ComAI-and-LocalAI.md#securing-localai-with-api-keys) for the full walkthrough.
+
 ## Configured Local Model Was Not Found
 
 List local models:
