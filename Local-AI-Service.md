@@ -286,7 +286,10 @@ generation refuse to produce an unauthenticated config at all.
 Creating, revoking, or rotating a key restarts the running service, the same
 way changing a model does. Keys are stored in `conf/api-keys.tsv`, outside
 Git, mode `600`; `conf/config.yaml` is also `600` once it can contain a
-plaintext key.
+plaintext key. Each key is written to `config.yaml` with a `# name` comment
+above it (taken from its `api-keys.tsv` label), so the file stays
+identifiable with several keys active — you still only manage keys through
+`localai key ...`, never by hand-editing `config.yaml`.
 
 Using ComAI's `local` provider against a key-protected LocalAI? See
 [Securing LocalAI With API Keys](ComAI-and-LocalAI.md#securing-localai-with-api-keys).
