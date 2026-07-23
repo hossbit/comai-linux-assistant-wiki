@@ -275,17 +275,121 @@ Useful tuning variables:
 | Variable | Effect |
 | --- | --- |
 | `LOCALAI_CTX_SIZE` | Sets `--ctx-size`. |
-| `LOCALAI_N_GPU_LAYERS` | Sets `--n-gpu-layers`. |
+| `LOCALAI_N_GPU_LAYERS` | Sets `--n-gpu-layers` (overridden per model when auto-tune is on; see below). |
 | `LOCALAI_THREADS` | Sets `-t`. |
-| `LOCALAI_CACHE_TYPE_K` / `LOCALAI_CACHE_TYPE_V` | Set KV cache quantization. |
+| `LOCALAI_CACHE_TYPE_K` / `LOCALAI_CACHE_TYPE_V` | Set KV cache quantization (overridden per model when auto-tune is on). |
 | `LOCALAI_PARALLEL` | Adds `--parallel` when set. |
 | `LOCALAI_BATCH_SIZE` | Adds `--batch-size` when set. |
 | `LOCALAI_UBATCH_SIZE` | Adds `--ubatch-size` when set. |
-| `LOCALAI_FLASH_ATTN` | Adds `--flash-attn on` when set to `1`. |
+| `LOCALAI_FLASH_ATTN` | Adds `--flash-attn on` when set to `1` (overridden per model when auto-tune is on). |
 | `LOCALAI_JINJA` | Adds `--jinja` when set to `1`. |
 | `LOCALAI_MLOCK` | Adds `--mlock` when set to `1`. |
 | `LOCALAI_NO_MMAP` | Adds `--no-mmap` when set to `1`. |
 | `LOCALAI_EXTRA_LLAMA_ARGS` | Appends extra single-line llama-server flags. |
+| `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. |
+| `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). |
+| `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. |
+| `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint. See [Metrics](#metrics). |
+| `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). |
+| `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. |
+| `LOCALAI_MODELS_OVERRIDE_SUBDIR` | Subdirectory name for per-model override files. Default `models.d`. See [Per-Model Overrides](#per-model-overrides). |
+
+## Auto-Tuning
+
+On any non-CPU backend, `rebuild-config.sh` (run automatically by
+`start`/`restart`/`reload`) auto-tunes each model instead of applying one flat
+setting to all of them:
+
+- `--n-gpu-layers auto` — lets llama-server fit layers to free device memory
+  at load time. This is deliberately not a fixed number: llama-server's own
+  auto-fit logic is disabled whenever `-ngl` is set to an explicit number, so
+  a hardcoded "does it fit" guess is actually less safe than `auto` and can
+  OOM a model that would otherwise have partially offloaded successfully.
+- `--cache-type-k q8_0 --cache-type-v q8_0` — halves KV cache VRAM versus
+  `f16` at negligible quality cost.
+- `--flash-attn on`.
+
+Set `LOCALAI_AUTO_TUNE=0` to disable this and use the flat
+`LOCALAI_N_GPU_LAYERS`/`LOCALAI_CACHE_TYPE_K`/`LOCALAI_CACHE_TYPE_V`/`LOCALAI_FLASH_ATTN`
+values from the table above for every model instead.
+
+## Speculative Decoding
+
+Non-CPU backends default to `LOCALAI_SPEC_TYPE=ngram-simple` with
+`LOCALAI_SPEC_DRAFT_N_MAX=16`. This drafts tokens from patterns already seen
+in the response (useful for code, which repeats structure) and verifies every
+draft against the target model, so it never changes output quality, only
+speed. It needs no separate draft model and no extra VRAM.
+
+Set `LOCALAI_SPEC_TYPE=""` to disable it globally, or override it per model
+(see below). Other supported values (draft-model and n-gram variants) come
+from llama.cpp's own [speculative decoding
+docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/speculative.md).
+
+## Metrics
+
+`LOCALAI_METRICS_ENABLED=1` (default) exposes llama-swap's built-in
+`/metrics` endpoint — system and GPU stats in Prometheus format, no
+llama-server rebuild or extra flags required:
+
+```bash
+curl -s http://127.0.0.1:11435/metrics
+```
+
+llama-swap ships a [ready-made Grafana
+dashboard](https://github.com/mostlygeek/llama-swap/blob/main/docs/grafana/example-dashboard.json)
+for these metrics.
+
+## Preloading Models
+
+Set `LOCALAI_PRELOAD_MODELS="model-a,model-b"` (comma or space separated
+model IDs, as shown by `localai models`) to warm those models on
+`localai start`/`restart` instead of paying cold-start latency on the first
+request.
+
+## Multimodal Models
+
+Keep a vision/audio model in its own folder alongside a projector file named
+`mmproj*.gguf`:
+
+```text
+~/ai/models/gemma-vision/
+|-- gemma-vision.gguf
+`-- mmproj-gemma.gguf
+```
+
+LocalAI detects the projector file and adds `--mmproj` automatically. The
+projector file itself is never registered as its own model entry. Flat
+top-level models (not in their own folder) need an explicit `MMPROJ=` in a
+per-model override instead (see below).
+
+## Per-Model Overrides
+
+Global settings and auto-tuning apply to every model the same way. To
+override settings for one model, drop a file at
+`conf/models.d/<model-id>.conf`, using the same `<model-id>` shown by
+`localai models`. It's sourced as bash after auto-tuning runs, so it can set:
+
+```bash
+# conf/models.d/Qwen2.5-Coder-7B-Instruct-Q4_K_M.conf
+CTX_SIZE=32768
+N_GPU_LAYERS=999        # or "auto"/"all"
+CACHE_TYPE_K=q8_0
+CACHE_TYPE_V=q8_0
+FLASH_ATTN=1
+SPEC_TYPE=ngram-simple  # or "" to disable for this model
+SPEC_DRAFT_N_MAX=24
+TTL=0                   # seconds; 0 = never auto-unload
+ALIASES="gpt-4o-mini, coder"
+MMPROJ=/path/to/mmproj.gguf
+SET_TEMPERATURE=0.2
+SET_TOP_P=0.9
+EXTRA_ARGS="--no-mmproj-offload"
+```
+
+`ALIASES` becomes llama-swap `aliases:`; `SET_TEMPERATURE`/`SET_TOP_P` become
+a `filters.setParams` block. Embedding models get `LOCALAI_EMBEDDING_TTL`
+(120s default) automatically unless a `models.d` file sets `TTL` explicitly.
 
 ## Logs
 
