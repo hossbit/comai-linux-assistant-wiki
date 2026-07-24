@@ -51,6 +51,7 @@ comai opr hi
 - [Local AI Service](Local-AI-Service.md)
 - [File and Log Analysis](File-and-Log-Analysis.md)
 - [Troubleshooting](Troubleshooting.md)
+- [LocalAI Troubleshooting](Troubleshooting-LocalAI.md)
 - [Uninstall](Uninstall.md)
 - [FAQ](FAQ.md)
 

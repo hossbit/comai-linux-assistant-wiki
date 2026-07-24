@@ -36,6 +36,7 @@ Configuration.md
 File-and-Log-Analysis.md
 Local-AI-Service.md
 Troubleshooting.md
+Troubleshooting-LocalAI.md
 Uninstall.md
 FAQ.md
 Publishing.md

@@ -9,6 +9,7 @@
 - [File and Log Analysis](File-and-Log-Analysis.md)
 - [Local AI Service](Local-AI-Service.md)
 - [Troubleshooting](Troubleshooting.md)
+- [LocalAI Troubleshooting](Troubleshooting-LocalAI.md)
 - [Uninstall](Uninstall.md)
 - [FAQ](FAQ.md)
 - [Publishing](Publishing.md)
