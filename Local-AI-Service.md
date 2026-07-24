@@ -330,6 +330,10 @@ Useful tuning variables:
 | `LOCALAI_MLOCK` | Adds `--mlock` when set to `1`. |
 | `LOCALAI_NO_MMAP` | Adds `--no-mmap` when set to `1`. |
 | `LOCALAI_EXTRA_LLAMA_ARGS` | Appends extra single-line llama-server flags. |
+| `LOCALAI_SPLIT_MODE` | Sets `--split-mode` (`none`, `layer`, or `tensor`) for multi-GPU installs. See [Multi-GPU](#multi-gpu). |
+| `LOCALAI_TENSOR_SPLIT` | Sets `--tensor-split`, e.g. `3,1` to give GPU 0 three times GPU 1's share. |
+| `LOCALAI_MAIN_GPU` | Sets `--main-gpu` (device index), used with `--split-mode none`. |
+| `LOCALAI_DEVICE` | Sets `--device`, a comma-separated device list (e.g. `CUDA0,CUDA1`) to restrict which GPUs llama-server uses. |
 | `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. |
 | `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). |
 | `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. |
@@ -371,6 +375,29 @@ Set `LOCALAI_SPEC_TYPE=""` to disable it globally, or override it per model
 (see below). Other supported values (draft-model and n-gram variants) come
 from llama.cpp's own [speculative decoding
 docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/speculative.md).
+
+## Multi-GPU
+
+All blank by default, which leaves llama-server on its own defaults (splits
+each model across every visible GPU by layer). Set these to change how a
+system with more than one GPU is used:
+
+```bash
+LOCALAI_SPLIT_MODE=layer localai start    # default: split layers across GPUs
+LOCALAI_SPLIT_MODE=tensor localai start   # split tensors/KV cache across GPUs (needs fast interconnect, --flash-attn)
+LOCALAI_SPLIT_MODE=none LOCALAI_MAIN_GPU=1 localai start  # pin to one GPU
+LOCALAI_TENSOR_SPLIT=3,1 localai start    # give GPU 0 three times GPU 1's share
+LOCALAI_DEVICE=CUDA0,CUDA1 localai start  # restrict which GPUs are visible
+```
+
+`localai suggest` reports the number of GPUs it detects and reminds you these
+variables exist when there's more than one. `tensor` split mode isn't
+available for every model architecture (MoE and state-space models fall back
+to `layer`); KV cache quantization also only applies in `layer`/`none` mode.
+See llama.cpp's own [multi-GPU
+docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/multi-gpu.md)
+for the full tradeoffs. Override any of these per model the same way as other
+tuning variables (see [Per-Model Overrides](#per-model-overrides)).
 
 ## Metrics
 
@@ -452,6 +479,10 @@ MMPROJ=/path/to/mmproj.gguf
 SET_TEMPERATURE=0.2
 SET_TOP_P=0.9
 EXTRA_ARGS="--no-mmproj-offload"
+SPLIT_MODE=none        # or "layer"/"tensor"; blank = llama-server's own default
+TENSOR_SPLIT=3,1
+MAIN_GPU=1
+DEVICE=CUDA1            # pin this one model to a specific GPU
 ```
 
 `ALIASES` becomes llama-swap `aliases:`; `SET_TEMPERATURE`/`SET_TOP_P` become
