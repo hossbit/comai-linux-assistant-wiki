@@ -327,8 +327,8 @@ Useful tuning variables:
 | `LOCALAI_UBATCH_SIZE` | Adds `--ubatch-size` when set. |
 | `LOCALAI_FLASH_ATTN` | Adds `--flash-attn on` when set to `1` (overridden per model when auto-tune is on). |
 | `LOCALAI_JINJA` | Adds `--jinja` when set to `1`. |
-| `LOCALAI_MLOCK` | Adds `--mlock` when set to `1`. |
-| `LOCALAI_NO_MMAP` | Adds `--no-mmap` when set to `1`. |
+| `LOCALAI_MLOCK` | Set to `1` to lock the model in RAM. Maps onto llama-server's `--load-mode` (`mmap+mlock`, or `mlock` if combined with `LOCALAI_NO_MMAP=1`). |
+| `LOCALAI_NO_MMAP` | Set to `1` to disable memory-mapping the model. Maps onto `--load-mode` the same way as `LOCALAI_MLOCK`. |
 | `LOCALAI_EXTRA_LLAMA_ARGS` | Appends extra single-line llama-server flags. |
 | `LOCALAI_SPLIT_MODE` | Sets `--split-mode` (`none`, `layer`, or `tensor`) for multi-GPU installs. See [Multi-GPU](#multi-gpu). |
 | `LOCALAI_TENSOR_SPLIT` | Sets `--tensor-split`, e.g. `3,1` to give GPU 0 three times GPU 1's share. |
