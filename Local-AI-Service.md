@@ -70,9 +70,22 @@ LLAMA_CPP_BACKEND=auto ./install-local-ai.sh
 The same `LLAMA_CPP_BACKEND=<name>` form also works piped through the
 one-line installer, e.g. `curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=vulkan bash`.
 
-Already installed? Add or switch backends with the `localai` CLI instead —
-no need to re-run the installer. See [Switching Backends](#switching-backends)
-below.
+Already installed? Add another backend with the `localai` CLI instead — no
+need to re-run the installer:
+
+```bash
+localai backend install cpu
+localai backend install vulkan
+localai backend install rocm
+localai backend install openvino
+localai backend install sycl-fp16
+localai backend install sycl-fp32
+localai backend install cuda
+localai backend install auto
+```
+
+This installs the backend into its own slot without switching to it. See
+[Switching Backends](#switching-backends) below to actually activate one.
 
 ## Backend Selection
 
