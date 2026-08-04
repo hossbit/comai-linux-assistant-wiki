@@ -639,7 +639,7 @@ Watch logs:
 localai logs
 ```
 
-## Test Commands
+## Commands
 
 ### Service
 
