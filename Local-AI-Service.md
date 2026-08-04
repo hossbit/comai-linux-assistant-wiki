@@ -641,28 +641,54 @@ localai logs
 
 ## Test Commands
 
-```bash
-localai version
-localai models
-localai start
-localai status
-localai check
-localai check --chat
-localai load MODEL_NAME
-localai unload all
-localai key create
-localai key list
-localai switch BACKEND
-localai backend list
-localai backend install BACKEND
-```
+### Service
 
-LocalAI update and uninstall:
+| Command | Description |
+| --- | --- |
+| `localai start` | Start the LocalAI service |
+| `localai stop` | Stop the LocalAI service |
+| `localai restart` | Restart the LocalAI service |
+| `localai reload` | Rescan models and restart only if `config.yaml` would change |
+| `localai status` | Show service status |
+| `localai check` | Check process, port, and API health |
+| `localai check --chat` | Also round-trip a real chat completion against the first non-embedding model |
+| `localai logs` | Follow service logs |
 
-```bash
-localai update
-localai uninstall
-```
+### Models
+
+| Command | Description |
+| --- | --- |
+| `localai models` | List installed GGUF models |
+| `localai suggest` | Suggest runtime settings based on installed models, RAM, and detected GPU memory |
+| `localai load MODEL_NAME` | Load one model, or `all` |
+| `localai unload MODEL_NAME` | Unload one loaded model, or `all` |
+
+### Backends
+
+| Command | Description |
+| --- | --- |
+| `localai switch BACKEND` | Switch the active backend — instant if already installed before, otherwise installs it first |
+| `localai backend list` | List installed backends, their version, disk size, and which one is active |
+| `localai backend install BACKEND` | Install a backend without switching to it |
+| `localai update` | Update llama.cpp, llama-swap, and helper scripts for the active backend |
+| `localai update --all` | Update every installed backend, not just the active one |
+
+### API Keys
+
+| Command | Description |
+| --- | --- |
+| `localai key create [NAME]` | Create a new API key — prints the full secret exactly once |
+| `localai key list` | List keys (masked fingerprint only) |
+| `localai key revoke KEY_ID` | Revoke a key |
+| `localai key rotate KEY_ID` | Rotate a key's secret |
+
+### Info & Uninstall
+
+| Command | Description |
+| --- | --- |
+| `localai version` | Show LocalAI and component versions |
+| `localai uninstall` | Uninstall LocalAI, keeping downloaded models |
+| `localai uninstall --remove-models` | Also delete downloaded GGUF models |
 
 LocalAI 1.2.4 and newer updates are layout-safe. The updater copies the
 installed `lib/` tree recursively, so future internal structure changes do not
