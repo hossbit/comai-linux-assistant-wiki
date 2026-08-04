@@ -52,10 +52,9 @@ chmod +x ./*.sh
 ./install-local-ai.sh
 ```
 
-## Backend Selection
-
-The LocalAI installer defaults to the Vulkan llama.cpp backend. Select another
-backend when needed:
+Install with a specific llama.cpp backend. The installer defaults to Vulkan
+when `LLAMA_CPP_BACKEND` isn't set — see [Backend Selection](#backend-selection)
+below for what each one means and how to switch later without reinstalling:
 
 ```bash
 LLAMA_CPP_BACKEND=cpu ./install-local-ai.sh
@@ -67,6 +66,19 @@ LLAMA_CPP_BACKEND=sycl-fp32 ./install-local-ai.sh
 LLAMA_CPP_BACKEND=cuda ./install-local-ai.sh
 LLAMA_CPP_BACKEND=auto ./install-local-ai.sh
 ```
+
+The same `LLAMA_CPP_BACKEND=<name>` form also works piped through the
+one-line installer, e.g. `curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=vulkan bash`.
+
+Already installed? Add or switch backends with the `localai` CLI instead —
+no need to re-run the installer. See [Switching Backends](#switching-backends)
+below.
+
+## Backend Selection
+
+The LocalAI installer defaults to the Vulkan llama.cpp backend. See
+[Install LocalAI](#install-localai) above for the install command for each
+backend.
 
 If a non-CPU backend installs but cannot run on the system, LocalAI retries once
 with the CPU backend by default.
@@ -92,12 +104,9 @@ install therefore takes noticeably longer than the other backends (a real
 compile, not a download), but produces a real speed advantage on NVIDIA
 hardware once built — measured on an RTX 3050 Laptop GPU, CUDA processed
 prompts roughly 5x faster than Vulkan and generated tokens about 25-30%
-faster, same model, same settings.
-
-```bash
-LLAMA_CPP_BACKEND=auto ./install-local-ai.sh    # CUDA when fully usable, else Vulkan, else CPU
-LLAMA_CPP_BACKEND=cuda ./install-local-ai.sh    # require CUDA; fails clearly if it isn't usable
-```
+faster, same model, same settings. `auto` (see [Install
+LocalAI](#install-localai) above) picks CUDA when it's fully usable, else
+Vulkan, else CPU; explicit `cuda` requires it and fails clearly otherwise.
 
 `auto` and explicit `cuda` both need:
 
