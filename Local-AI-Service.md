@@ -64,6 +64,8 @@ LLAMA_CPP_BACKEND=rocm ./install-local-ai.sh
 LLAMA_CPP_BACKEND=openvino ./install-local-ai.sh
 LLAMA_CPP_BACKEND=sycl-fp16 ./install-local-ai.sh
 LLAMA_CPP_BACKEND=sycl-fp32 ./install-local-ai.sh
+LLAMA_CPP_BACKEND=cuda ./install-local-ai.sh
+LLAMA_CPP_BACKEND=auto ./install-local-ai.sh
 ```
 
 If a non-CPU backend installs but cannot run on the system, LocalAI retries once
@@ -79,6 +81,120 @@ LOCALAI_PARALLEL=1
 ```
 
 CPU mode is useful for compatibility testing, but larger models may be slow.
+
+### CUDA
+
+CPU, Vulkan, ROCm, OpenVINO, and SYCL all install a prebuilt `llama.cpp`
+release. CUDA is different: upstream doesn't publish a portable prebuilt CUDA
+build (it's tied to one exact CUDA runtime version), so `LLAMA_CPP_BACKEND=cuda`
+builds `llama.cpp` from source against your own CUDA Toolkit instead. A CUDA
+install therefore takes noticeably longer than the other backends (a real
+compile, not a download), but produces a real speed advantage on NVIDIA
+hardware once built — measured on an RTX 3050 Laptop GPU, CUDA processed
+prompts roughly 5x faster than Vulkan and generated tokens about 25-30%
+faster, same model, same settings.
+
+```bash
+LLAMA_CPP_BACKEND=auto ./install-local-ai.sh    # CUDA when fully usable, else Vulkan, else CPU
+LLAMA_CPP_BACKEND=cuda ./install-local-ai.sh    # require CUDA; fails clearly if it isn't usable
+```
+
+`auto` and explicit `cuda` both need:
+
+- A working NVIDIA driver — `nvidia-smi` must succeed and list a GPU.
+- The CUDA Toolkit's `nvcc` compiler, found on `PATH`, in a common location
+  (`/usr/local/cuda/bin/nvcc`, etc.), or via `LOCALAI_NVCC=/path/to/nvcc`.
+
+**`nvidia-smi`'s "CUDA Version" is the driver's maximum supported runtime, not
+proof the CUDA Toolkit is installed.** A GPU with a current driver and no
+`nvcc` will not build with CUDA. The installer never installs the CUDA
+Toolkit or an NVIDIA driver for you — that's a deliberately manual,
+system-sensitive step. Install a CUDA Toolkit yourself (see your distro's or
+[NVIDIA's own instructions](https://developer.nvidia.com/cuda-downloads)),
+or point `LOCALAI_NVCC` at one you already have, or use `vulkan`/`auto`
+instead.
+
+Useful overrides:
+
+```bash
+# Pin a specific nvcc when more than one CUDA Toolkit is installed.
+LLAMA_CPP_BACKEND=cuda LOCALAI_NVCC=/usr/local/cuda-12.4/bin/nvcc ./install-local-ai.sh
+
+# Pin GPU architectures (compute capability) instead of auto-detecting it.
+# 86 = Ampere laptop/desktop (RTX 30-series), 89 = Ada (RTX 40-series).
+LLAMA_CPP_BACKEND=cuda LOCALAI_CUDA_ARCHITECTURES=86 ./install-local-ai.sh
+
+# Explicit "cuda" fails clearly by default if the environment isn't usable.
+# Set this to fall back to vulkan/cpu automatically instead (auto mode
+# already does this without needing the flag).
+LOCALAI_CUDA_FALLBACK=1
+```
+
+CUDA compatibility depends on the driver, CUDA Toolkit, host C++ compiler,
+GPU architecture, CMake, and the pinned `llama.cpp` revision all being
+mutually compatible. A newer system compiler than the CUDA Toolkit supports
+is a common failure (`nvcc` rejects it outright); installing an older `g++`
+(e.g. `g++-13`) alongside your default compiler and re-running resolves it
+without changing your system's default compiler.
+
+CUDA doesn't change how GPU layers work: a 4GB GPU still does partial layer
+offload rather than requiring the whole model to fit in VRAM, same as
+Vulkan/ROCm — see [Auto-Tuning](#auto-tuning). Verify a CUDA install with:
+
+```bash
+~/ai/bin/llama-server --list-devices   # expect a "CUDA0 ... NVIDIA ..." line
+localai version                         # "llama.cpp backend: cuda"
+```
+
+### Switching Backends
+
+Every backend you install stays on disk in its own slot
+(`~/ai/bin/llama.cpp.d/<backend>/`) instead of being deleted when you switch
+away from it, so switching back to one you've used before is instant:
+
+```bash
+localai switch vulkan
+localai switch cuda
+localai switch auto
+```
+
+`switch` repoints the active backend and restarts the service — no
+redownload, and for CUDA, no rebuild. If a backend was never installed
+before, `switch` transparently installs it first (same as a fresh
+`LLAMA_CPP_BACKEND=<name>` install above), then is instant on every switch
+after that.
+
+### Managing Multiple Backends
+
+See everything you have installed, which one is active, and how much disk
+space each uses:
+
+```bash
+localai backend list
+```
+
+```text
+    BACKEND    VERSION                SIZE
+*   cuda       10252 (fe2adf0)        209M
+    vulkan     10252 (fe2adf0e7)      90M
+```
+
+Install a backend without switching to it — useful for pre-building CUDA
+ahead of time while staying on your current backend:
+
+```bash
+localai backend install cuda
+```
+
+Update everything you have installed (not just the active backend) to the
+latest `llama.cpp` release/revision, without changing which one is active:
+
+```bash
+localai update --all
+```
+
+A plain `localai update` (no `--all`) only refreshes the currently active
+backend, same as before.
 
 ## Fedora Notes
 
@@ -102,6 +218,17 @@ For a CPU-only Fedora VM, use:
 ```bash
 curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=cpu bash
 ```
+
+For CUDA on Fedora/RHEL, the installer additionally installs ordinary build
+tools with `dnf`:
+
+```text
+gcc gcc-c++ make cmake ninja-build pkgconfig git
+```
+
+Fedora doesn't ship the CUDA Toolkit itself in its own repositories — install
+it from [NVIDIA's official CUDA repo](https://developer.nvidia.com/cuda-downloads)
+for your Fedora/RHEL version before using `LLAMA_CPP_BACKEND=cuda` there.
 
 ## Add Models
 
@@ -516,6 +643,9 @@ localai load MODEL_NAME
 localai unload all
 localai key create
 localai key list
+localai switch BACKEND
+localai backend list
+localai backend install BACKEND
 ```
 
 LocalAI update and uninstall:

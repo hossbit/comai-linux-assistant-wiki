@@ -19,6 +19,8 @@
 - [Install ComAI](Installation.md#install-comai)
 - [Use ComAI With LocalAI](ComAI-and-LocalAI.md)
 - [Secure LocalAI With API Keys](ComAI-and-LocalAI.md#securing-localai-with-api-keys)
+- [Use CUDA With LocalAI](Local-AI-Service.md#cuda)
+- [Switch LocalAI Backends](Local-AI-Service.md#switching-backends)
 - [Use Ollama](Providers.md#ollama)
 - [Use LM Studio](Providers.md#lm-studio)
 - [Use OpenAI](Providers.md#openai)
