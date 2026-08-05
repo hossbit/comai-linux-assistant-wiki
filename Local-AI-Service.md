@@ -638,6 +638,20 @@ DEVICE=CUDA1            # pin this one model to a specific GPU
 a `filters.setParams` block. Embedding models get `LOCALAI_EMBEDDING_TTL`
 (120s default) automatically unless a `models.d` file sets `TTL` explicitly.
 
+`EXTRA_ARGS` as a plain string (as above) works for simple space-separated
+flags. If a value itself needs embedded spaces or quotes -- for example
+Qwen's own thinking-mode toggle -- declare it as a bash array instead, and
+each element is safely quoted for you:
+
+```bash
+EXTRA_ARGS=(--chat-template-kwargs '{"enable_thinking":false}')
+```
+
+Don't hand-escape quotes into a plain-string `EXTRA_ARGS`; the generated
+`cmd:` line is re-parsed by llama-swap's own tokenizer, so characters like
+`"` and `{` surviving that second parse is exactly what the array form
+guarantees and manual escaping usually gets wrong.
+
 ## Logs
 
 LocalAI service logs are written under the LocalAI install directory:
