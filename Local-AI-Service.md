@@ -486,6 +486,12 @@ Useful tuning variables:
 | `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. |
 | `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). |
 | `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. |
+| `LOCALAI_CPU_MOE` | `1` keeps every MoE expert layer on CPU (`--cpu-moe`). Default `0`. See [MoE CPU Offload](#moe-cpu-offload). |
+| `LOCALAI_N_CPU_MOE` | Keeps only the first N expert layers on CPU (`--n-cpu-moe N`); wins over `LOCALAI_CPU_MOE` when both are set. Default unset. See [MoE CPU Offload](#moe-cpu-offload). |
+| `LOCALAI_REASONING` | Sets `--reasoning` (`on`/`off`/`auto`) for thinking models. Default unset (llama-server auto-detects from the chat template). See [Reasoning / Thinking Models](#reasoning--thinking-models). |
+| `LOCALAI_REASONING_BUDGET` | Sets `--reasoning-budget` (token budget; `-1` unrestricted, `0` = answer immediately). Default unset. |
+| `LOCALAI_REASONING_FORMAT` | Sets `--reasoning-format` (`none`/`deepseek`/`deepseek-legacy`). Default unset. |
+| `LOCALAI_REASONING_PRESERVE` | `1` sets `--reasoning-preserve`, keeping the reasoning trace across turns. Default `0`. |
 | `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint. See [Metrics](#metrics). |
 | `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). |
 | `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. |
@@ -524,6 +530,71 @@ Set `LOCALAI_SPEC_TYPE=""` to disable it globally, or override it per model
 (see below). Other supported values (draft-model and n-gram variants) come
 from llama.cpp's own [speculative decoding
 docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/speculative.md).
+
+The `draft-*` `SPEC_TYPE` values (`draft-simple`, `draft-eagle3`, `draft-mtp`,
+`draft-dflash`, `draft-dspark`) need an actual smaller model to draft from,
+unlike the `ngram-*` self-speculative variants above. Point one at a model
+with a per-model override (see [Per-Model Overrides](#per-model-overrides)):
+
+```bash
+# conf/models.d/big-model.conf
+SPEC_DRAFT_MODEL=/path/to/small-draft-model.gguf
+SPEC_DRAFT_N_MIN=2       # optional; minimum tokens to draft per step
+SPEC_DRAFT_DEVICE=CUDA1  # optional; run the draft model on its own GPU
+SPEC_DRAFT_NGL=999       # optional; GPU layers for the draft model
+```
+
+## MoE CPU Offload
+
+Large Mixture-of-Experts releases (DeepSeek, GLM, Qwen3-MoE, Kimi K2, gpt-oss,
+...) are often far too big to fit entirely in VRAM even with heavy
+quantization. llama.cpp can keep the (large, mostly-idle-per-token) expert
+weights in system RAM while keeping attention and shared layers on GPU,
+letting these models run on a GPU that could never hold the full model.
+Set this per model with an override, since it only applies to MoE
+architectures:
+
+```bash
+# conf/models.d/big-moe-model.conf
+CPU_MOE=1        # keep every expert layer on CPU -- simplest "make it fit"
+# or, for finer control (lower N = more experts stay on GPU = faster):
+N_CPU_MOE=20     # keep only the first 20 expert layers on CPU
+```
+
+`N_CPU_MOE` wins over `CPU_MOE` when both are set. Start with `CPU_MOE=1` to
+confirm the model loads at all, then switch to `N_CPU_MOE` and reduce N until
+you run out of VRAM, for the best speed/fit tradeoff.
+
+For even finer-grained placement than a flat layer count, `OVERRIDE_TENSOR`
+takes a raw `-ot` tensor-buffer-type pattern (regex, including backslashes):
+
+```bash
+OVERRIDE_TENSOR="blk\.(2[0-9]|[3-9][0-9])\.ffn_.*_exps\.=CPU"
+```
+
+See llama.cpp's own docs on
+[`--n-cpu-moe`/`--cpu-moe`](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md)
+and `--override-tensor` for the full pattern syntax.
+
+## Reasoning / Thinking Models
+
+Reasoning/thinking models (DeepSeek-R1, GLM, Qwen3 thinking mode, gpt-oss,
+...) already have their thinking behavior driven by the model's own chat
+template; the variables below only need setting to override that default:
+
+```bash
+# conf/models.d/thinking-model.conf
+REASONING=auto              # on/off/auto
+REASONING_BUDGET=0          # token budget; -1 unrestricted, 0 = no thinking
+REASONING_FORMAT=deepseek   # none/deepseek/deepseek-legacy
+REASONING_PRESERVE=1        # keep the reasoning trace across turns
+```
+
+`LOCALAI_REASONING`/`LOCALAI_REASONING_BUDGET`/`LOCALAI_REASONING_FORMAT`/
+`LOCALAI_REASONING_PRESERVE` set the same values globally (see the table
+above). Some models (e.g. Qwen3) instead toggle thinking mode through their
+chat template's own kwargs -- for those, use `EXTRA_ARGS` as shown in
+[Per-Model Overrides](#per-model-overrides) instead.
 
 ## Multi-GPU
 
@@ -606,6 +677,19 @@ projector file itself is never registered as its own model entry. Flat
 top-level models (not in their own folder) need an explicit `MMPROJ=` in a
 per-model override instead (see below).
 
+A few related per-model overrides are also available:
+
+```bash
+# conf/models.d/vision-model.conf
+MMPROJ_URL=https://example.com/mmproj.gguf  # download instead of a local MMPROJ path
+MMPROJ_OFFLOAD=1                            # offload the projector to GPU too
+IMAGE_MIN_TOKENS=64                         # minimum tokens per image
+IMAGE_MAX_TOKENS=1024                       # maximum tokens per image
+```
+
+`MMPROJ_URL` is only used when `MMPROJ` isn't already set (explicitly or via
+folder auto-detection); `MMPROJ_OFFLOAD` requires one of the two to be set.
+
 ## Per-Model Overrides
 
 Global settings and auto-tuning apply to every model the same way. To
@@ -632,11 +716,30 @@ SPLIT_MODE=none        # or "layer"/"tensor"; blank = llama-server's own default
 TENSOR_SPLIT=3,1
 MAIN_GPU=1
 DEVICE=CUDA1            # pin this one model to a specific GPU
+CPU_MOE=1               # or N_CPU_MOE=20; see MoE CPU Offload
+OVERRIDE_TENSOR="blk\.(2[0-9]|[3-9][0-9])\.ffn_.*_exps\.=CPU"
+REASONING=auto           # see Reasoning / Thinking Models
+REASONING_BUDGET=-1
+REASONING_FORMAT=deepseek
+REASONING_PRESERVE=1
+SPEC_DRAFT_MODEL=/path/to/small-draft-model.gguf  # see Speculative Decoding
+SPEC_DRAFT_N_MIN=2
+SPEC_DRAFT_DEVICE=CUDA1
+SPEC_DRAFT_NGL=999
+MMPROJ_URL=https://example.com/mmproj.gguf  # see Multimodal Models
+MMPROJ_OFFLOAD=1
+IMAGE_MIN_TOKENS=64
+IMAGE_MAX_TOKENS=1024
+LORA="/path/to/a.gguf, /path/to/b.gguf"
+LORA_SCALED=/path/to/c.gguf:0.5
 ```
 
 `ALIASES` becomes llama-swap `aliases:`; `SET_TEMPERATURE`/`SET_TOP_P` become
 a `filters.setParams` block. Embedding models get `LOCALAI_EMBEDDING_TTL`
 (120s default) automatically unless a `models.d` file sets `TTL` explicitly.
+`LORA`/`LORA_SCALED` accept a comma-separated list of adapter paths (plain
+paths for `LORA`, `path:scale` pairs for `LORA_SCALED`) and pass it straight
+through as llama-server's own `--lora`/`--lora-scaled` comma list.
 
 `EXTRA_ARGS` as a plain string (as above) works for simple space-separated
 flags. If a value itself needs embedded spaces or quotes -- for example
