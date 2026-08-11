@@ -14,6 +14,18 @@ ComAI is a Bash-powered AI assistant for Linux terminals. It helps you ask Linux
 
 ComAI is the client. LocalAI is one optional backend. See [ComAI And LocalAI](ComAI-and-LocalAI.md) for install order and how the two separate projects fit together. LocalAI-specific install, Fedora, model, and update notes live in [Local AI Service](Local-AI-Service.md).
 
+## ❤️ Support
+
+If you find ComAI useful, you can support its continued development:
+
+<div align="center">
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/bmc-button.webp" alt="Buy me a coffee" width="300">
+  </a>
+</div>
+
+⭐ Starring and sharing the repository also helps a lot.
+
 ## Start Here
 
 ```bash
