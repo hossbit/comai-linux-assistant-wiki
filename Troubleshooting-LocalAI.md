@@ -157,5 +157,5 @@ If you are working from a source checkout, reinstall from that checkout with:
 ```
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/localai-hero.png" alt="LocalAI local LLM server" width="900">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/localai-hero.webp" alt="LocalAI local LLM server" width="900">
 </div>

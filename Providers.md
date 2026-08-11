@@ -75,7 +75,7 @@ Local mode talks to any OpenAI-compatible local API server.
 
 <div align="center">
   <a href="https://github.com/hossbit/local-ai-server">
-    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/local-ai-server.png" alt="Local AI Server" width="300">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/local-ai-server.webp" alt="Local AI Server" width="300">
     <br>
     <strong>hossbit/local-ai-server</strong>
   </a>
@@ -344,5 +344,5 @@ comai opr --model=anthropic/claude-sonnet-4.5 hi
 The default model, `openrouter/auto`, lets OpenRouter pick a different underlying model for each request. Model self-identification is not reliable, and `auto` makes it worse since the answering model can change between requests. Use `comai models openrouter --filter TEXT` to search the catalog and pin a specific model in config for consistent results.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.png" alt="ComAI local AI assistant for Linux" width="900">
+  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.webp" alt="ComAI local AI assistant for Linux" width="900">
 </div>
