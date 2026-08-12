@@ -486,6 +486,8 @@ Useful tuning variables:
 | `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. |
 | `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). |
 | `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. |
+| `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K` / `LOCALAI_SPEC_DRAFT_CACHE_TYPE_V` | KV cache quantization for the speculative draft model. Default unset. See [Speculative Decoding](#speculative-decoding). |
+| `LOCALAI_SPEC_DRAFT_CPU_MOE` / `LOCALAI_SPEC_DRAFT_N_CPU_MOE` | MoE CPU offload for the draft model (`--cpu-moe-draft` / `--n-cpu-moe-draft`). Default off. See [MoE CPU Offload](#moe-cpu-offload). |
 | `LOCALAI_CPU_MOE` | `1` keeps every MoE expert layer on CPU (`--cpu-moe`). Default `0`. See [MoE CPU Offload](#moe-cpu-offload). |
 | `LOCALAI_N_CPU_MOE` | Keeps only the first N expert layers on CPU (`--n-cpu-moe N`); wins over `LOCALAI_CPU_MOE` when both are set. Default unset. See [MoE CPU Offload](#moe-cpu-offload). |
 | `LOCALAI_REASONING` | Sets `--reasoning` (`on`/`off`/`auto`) for thinking models. Default unset (llama-server auto-detects from the chat template). See [Reasoning / Thinking Models](#reasoning--thinking-models). |
@@ -539,9 +541,13 @@ with a per-model override (see [Per-Model Overrides](#per-model-overrides)):
 ```bash
 # conf/models.d/big-model.conf
 SPEC_DRAFT_MODEL=/path/to/small-draft-model.gguf
-SPEC_DRAFT_N_MIN=2       # optional; minimum tokens to draft per step
-SPEC_DRAFT_DEVICE=CUDA1  # optional; run the draft model on its own GPU
-SPEC_DRAFT_NGL=999       # optional; GPU layers for the draft model
+SPEC_DRAFT_N_MIN=2              # optional; minimum tokens to draft per step
+SPEC_DRAFT_DEVICE=CUDA1         # optional; run the draft model on its own GPU
+SPEC_DRAFT_NGL=999              # optional; GPU layers for the draft model
+SPEC_DRAFT_CACHE_TYPE_K=q8_0    # optional; cheaper KV cache for the draft model
+SPEC_DRAFT_CACHE_TYPE_V=q8_0
+SPEC_DRAFT_CPU_MOE=1            # optional; keep draft-model MoE experts on CPU
+SPEC_DRAFT_N_CPU_MOE=20         # or keep only the first N expert layers on CPU
 ```
 
 ## MoE CPU Offload
@@ -726,6 +732,10 @@ SPEC_DRAFT_MODEL=/path/to/small-draft-model.gguf  # see Speculative Decoding
 SPEC_DRAFT_N_MIN=2
 SPEC_DRAFT_DEVICE=CUDA1
 SPEC_DRAFT_NGL=999
+SPEC_DRAFT_CACHE_TYPE_K=q8_0
+SPEC_DRAFT_CACHE_TYPE_V=q8_0
+SPEC_DRAFT_CPU_MOE=1
+SPEC_DRAFT_N_CPU_MOE=20
 MMPROJ_URL=https://example.com/mmproj.gguf  # see Multimodal Models
 MMPROJ_OFFLOAD=1
 IMAGE_MIN_TOKENS=64
