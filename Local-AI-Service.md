@@ -487,7 +487,7 @@ Useful tuning variables:
 | `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_TYPE=draft-mtp` |
 | `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. | `LOCALAI_SPEC_DRAFT_N_MAX=32` |
 | `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K` / `LOCALAI_SPEC_DRAFT_CACHE_TYPE_V` | KV cache quantization for the speculative draft model. Default unset. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K=q8_0` |
-| `LOCALAI_MTP_MODELS_DIR` | Directory of MTP (multi-token prediction) assistant models for speculative decoding; maps onto llama-server `--models-dir`. Empty (default) disables it. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_MTP_MODELS_DIR="/home/mir/ai/models/mtp"` |
+| `LOCALAI_MTP_MODELS_DIR` | Directory of MTP (multi-token prediction) assistant models for speculative decoding; maps onto llama-server `--models-dir`. Empty (default) disables it. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_MTP_MODELS_DIR="~/ai/models/mtp"` |
 | `LOCALAI_SPEC_DRAFT_CPU_MOE` / `LOCALAI_SPEC_DRAFT_N_CPU_MOE` | MoE CPU offload for the draft model (`--cpu-moe-draft` / `--n-cpu-moe-draft`). Default off. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_SPEC_DRAFT_N_CPU_MOE=2` |
 | `LOCALAI_CPU_MOE` | `1` keeps every MoE expert layer on CPU (`--cpu-moe`). Default `0`. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_CPU_MOE=1` |
 | `LOCALAI_N_CPU_MOE` | Keeps only the first N expert layers on CPU (`--n-cpu-moe N`); wins over `LOCALAI_CPU_MOE` when both are set. Default unset. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_N_CPU_MOE=4` |
