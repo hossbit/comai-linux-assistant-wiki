@@ -465,43 +465,42 @@ LOCALAI_FLASH_ATTN=1 LOCALAI_PARALLEL=2 localai start
 
 Useful tuning variables:
 
-| Variable | Effect |
-| --- | --- |
-| `LOCALAI_CTX_SIZE` | Sets `--ctx-size`. |
-| `LOCALAI_N_GPU_LAYERS` | Sets `--n-gpu-layers` (overridden per model when auto-tune is on; see below). |
-| `LOCALAI_THREADS` | Sets `-t`. |
-| `LOCALAI_CACHE_TYPE_K` / `LOCALAI_CACHE_TYPE_V` | Set KV cache quantization (overridden per model when auto-tune is on). |
-| `LOCALAI_PARALLEL` | Adds `--parallel` when set. |
-| `LOCALAI_BATCH_SIZE` | Adds `--batch-size` when set. |
-| `LOCALAI_UBATCH_SIZE` | Adds `--ubatch-size` when set. |
-| `LOCALAI_FLASH_ATTN` | Adds `--flash-attn on` when set to `1` (overridden per model when auto-tune is on). |
-| `LOCALAI_JINJA` | Adds `--jinja` when set to `1`. |
-| `LOCALAI_MLOCK` | Set to `1` to lock the model in RAM. Maps onto llama-server's `--load-mode` (`mmap+mlock`, or `mlock` if combined with `LOCALAI_NO_MMAP=1`). |
-| `LOCALAI_NO_MMAP` | Set to `1` to disable memory-mapping the model. Maps onto `--load-mode` the same way as `LOCALAI_MLOCK`. |
-| `LOCALAI_EXTRA_LLAMA_ARGS` | Appends extra single-line llama-server flags. |
-| `LOCALAI_SPLIT_MODE` | Sets `--split-mode` (`none`, `layer`, or `tensor`) for multi-GPU installs. See [Multi-GPU](#multi-gpu). |
-| `LOCALAI_TENSOR_SPLIT` | Sets `--tensor-split`, e.g. `3,1` to give GPU 0 three times GPU 1's share. |
-| `LOCALAI_MAIN_GPU` | Sets `--main-gpu` (device index), used with `--split-mode none`. |
-| `LOCALAI_DEVICE` | Sets `--device`, a comma-separated device list (e.g. `CUDA0,CUDA1`) to restrict which GPUs llama-server uses. |
-| `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. |
-| `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). |
-| `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. |
-| `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K` / `LOCALAI_SPEC_DRAFT_CACHE_TYPE_V` | KV cache quantization for the speculative draft model. Default unset. See [Speculative Decoding](#speculative-decoding). |
-| `LOCALAI_MTP_MODELS_DIR` | Directory of MTP (multi-token prediction) assistant models for speculative decoding; maps onto llama-server `--models-dir`. Empty (default) disables it. See [Speculative Decoding](#speculative-decoding). |
-| `LOCALAI_SPEC_DRAFT_CPU_MOE` / `LOCALAI_SPEC_DRAFT_N_CPU_MOE` | MoE CPU offload for the draft model (`--cpu-moe-draft` / `--n-cpu-moe-draft`). Default off. See [MoE CPU Offload](#moe-cpu-offload). |
-| `LOCALAI_CPU_MOE` | `1` keeps every MoE expert layer on CPU (`--cpu-moe`). Default `0`. See [MoE CPU Offload](#moe-cpu-offload). |
-| `LOCALAI_N_CPU_MOE` | Keeps only the first N expert layers on CPU (`--n-cpu-moe N`); wins over `LOCALAI_CPU_MOE` when both are set. Default unset. See [MoE CPU Offload](#moe-cpu-offload). |
-| `LOCALAI_REASONING` | Sets `--reasoning` (`on`/`off`/`auto`) for thinking models. Default unset (llama-server auto-detects from the chat template). See [Reasoning / Thinking Models](#reasoning--thinking-models). |
-| `LOCALAI_REASONING_BUDGET` | Sets `--reasoning-budget` (token budget; `-1` unrestricted, `0` = answer immediately). Default unset. |
-| `LOCALAI_REASONING_FORMAT` | Sets `--reasoning-format` (`none`/`deepseek`/`deepseek-legacy`). Default unset. |
-| `LOCALAI_REASONING_PRESERVE` | `1` sets `--reasoning-preserve`, keeping the reasoning trace across turns. Default `0`. |
-| `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint. See [Metrics](#metrics). |
-| `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). |
-| `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. |
-| `LOCALAI_MODELS_OVERRIDE_SUBDIR` | Subdirectory name for per-model override files. Default `models.d`. See [Per-Model Overrides](#per-model-overrides). |
-| `LOCALAI_API_KEY_FILE` | Key registry filename under `conf/`. Default `api-keys.tsv`. See [API Keys](#api-keys). |
-| `LOCALAI_REQUIRE_API_KEY` | `1` refuses to generate a config with zero active keys, so auth can never be silently disabled. Default `0`. See [API Keys](#api-keys). |
-
+| Variable | Effect | Example |
+| --- | --- | --- |
+| `LOCALAI_CTX_SIZE` | Sets `--ctx-size`. | `LOCALAI_CTX_SIZE=16384` |
+| `LOCALAI_N_GPU_LAYERS` | Sets `--n-gpu-layers` (overridden per model when auto-tune is on; see below). | `LOCALAI_N_GPU_LAYERS=20` |
+| `LOCALAI_THREADS` | Sets `-t`. | `LOCALAI_THREADS=8` |
+| `LOCALAI_CACHE_TYPE_K` / `LOCALAI_CACHE_TYPE_V` | Set KV cache quantization (overridden per model when auto-tune is on). | `LOCALAI_CACHE_TYPE_K=q8_0 LOCALAI_CACHE_TYPE_V=q8_0` |
+| `LOCALAI_PARALLEL` | Adds `--parallel` when set. | `LOCALAI_PARALLEL=4` |
+| `LOCALAI_BATCH_SIZE` | Adds `--batch-size` when set. | `LOCALAI_BATCH_SIZE=2048` |
+| `LOCALAI_UBATCH_SIZE` | Adds `--ubatch-size` when set. | `LOCALAI_UBATCH_SIZE=512` |
+| `LOCALAI_FLASH_ATTN` | Adds `--flash-attn on` when set to `1` (overridden per model when auto-tune is on). | `LOCALAI_FLASH_ATTN=1` |
+| `LOCALAI_JINJA` | Adds `--jinja` when set to `1`. | `LOCALAI_JINJA=1` |
+| `LOCALAI_MLOCK` | Set to `1` to lock the model in RAM. Maps onto llama-server's `--load-mode` (`mmap+mlock`, or `mlock` if combined with `LOCALAI_NO_MMAP=1`). | `LOCALAI_MLOCK=1` |
+| `LOCALAI_NO_MMAP` | Set to `1` to disable memory-mapping the model. Maps onto `--load-mode` the same way as `LOCALAI_MLOCK`. | `LOCALAI_NO_MMAP=1` |
+| `LOCALAI_EXTRA_LLAMA_ARGS` | Appends extra single-line llama-server flags. | `LOCALAI_EXTRA_LLAMA_ARGS="--no-warmup --mlock"` |
+| `LOCALAI_SPLIT_MODE` | Sets `--split-mode` (`none`, `layer`, or `tensor`) for multi-GPU installs. See [Multi-GPU](#multi-gpu). | `LOCALAI_SPLIT_MODE=layer` |
+| `LOCALAI_TENSOR_SPLIT` | Sets `--tensor-split`, e.g. `3,1` to give GPU 0 three times GPU 1's share. | `LOCALAI_TENSOR_SPLIT=3,1` |
+| `LOCALAI_MAIN_GPU` | Sets `--main-gpu` (device index), used with `--split-mode none`. | `LOCALAI_MAIN_GPU=1` |
+| `LOCALAI_DEVICE` | Sets `--device`, a comma-separated device list (e.g. `CUDA0,CUDA1`) to restrict which GPUs llama-server uses. | `LOCALAI_DEVICE=CUDA0,CUDA1` |
+| `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. | `LOCALAI_AUTO_TUNE=0` |
+| `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_TYPE=draft-mtp` |
+| `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. | `LOCALAI_SPEC_DRAFT_N_MAX=32` |
+| `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K` / `LOCALAI_SPEC_DRAFT_CACHE_TYPE_V` | KV cache quantization for the speculative draft model. Default unset. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K=q8_0` |
+| `LOCALAI_MTP_MODELS_DIR` | Directory of MTP (multi-token prediction) assistant models for speculative decoding; maps onto llama-server `--models-dir`. Empty (default) disables it. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_MTP_MODELS_DIR="/home/mir/ai/models/mtp"` |
+| `LOCALAI_SPEC_DRAFT_CPU_MOE` / `LOCALAI_SPEC_DRAFT_N_CPU_MOE` | MoE CPU offload for the draft model (`--cpu-moe-draft` / `--n-cpu-moe-draft`). Default off. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_SPEC_DRAFT_N_CPU_MOE=2` |
+| `LOCALAI_CPU_MOE` | `1` keeps every MoE expert layer on CPU (`--cpu-moe`). Default `0`. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_CPU_MOE=1` |
+| `LOCALAI_N_CPU_MOE` | Keeps only the first N expert layers on CPU (`--n-cpu-moe N`); wins over `LOCALAI_CPU_MOE` when both are set. Default unset. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_N_CPU_MOE=4` |
+| `LOCALAI_REASONING` | Sets `--reasoning` (`on`/`off`/`auto`) for thinking models. Default unset (llama-server auto-detects from the chat template). See [Reasoning / Thinking Models](#reasoning--thinking-models). | `LOCALAI_REASONING=on` |
+| `LOCALAI_REASONING_BUDGET` | Sets `--reasoning-budget` (token budget; `-1` unrestricted, `0` = answer immediately). Default unset. | `LOCALAI_REASONING_BUDGET=1024` |
+| `LOCALAI_REASONING_FORMAT` | Sets `--reasoning-format` (`none`/`deepseek`/`deepseek-legacy`). Default unset. | `LOCALAI_REASONING_FORMAT=deepseek` |
+| `LOCALAI_REASONING_PRESERVE` | `1` sets `--reasoning-preserve`, keeping the reasoning trace across turns. Default `0`. | `LOCALAI_REASONING_PRESERVE=1` |
+| `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint. See [Metrics](#metrics). | `LOCALAI_METRICS_ENABLED=0` |
+| `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). | `LOCALAI_PRELOAD_MODELS="deepseek-v4-flash"` |
+| `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. | `LOCALAI_EMBEDDING_TTL=300` |
+| `LOCALAI_MODELS_OVERRIDE_SUBDIR` | Subdirectory name for per-model override files. Default `models.d`. See [Per-Model Overrides](#per-model-overrides). | `LOCALAI_MODELS_OVERRIDE_SUBDIR=models.d` |
+| `LOCALAI_API_KEY_FILE` | Key registry filename under `conf/`. Default `api-keys.tsv`. See [API Keys](#api-keys). | `LOCALAI_API_KEY_FILE=api-keys.tsv` |
+| `LOCALAI_REQUIRE_API_KEY` | `1` refuses to generate a config with zero active keys, so auth can never be silently disabled. Default `0`. See [API Keys](#api-keys). | `LOCALAI_REQUIRE_API_KEY=1` |
 ## Auto-Tuning
 
 On any non-CPU backend, `rebuild-config.sh` (run automatically by
