@@ -37,6 +37,21 @@ by default. Pin explicit versions only when you need a known-good build:
 LLAMA_CPP_VERSION=b9672 LLAMA_SWAP_VERSION=v226 ./install-local-ai.sh
 ```
 
+Upstream `llama.cpp` publishes two release channels: fast-moving `b[NUM]`
+tags cut on nearly every commit ("bleeding-edge"), and slower `vX.Y.Z` tags
+("stable") for downstream distribution. LocalAI tracks `b[NUM]` by default
+when `LLAMA_CPP_VERSION=latest` (the installer's default) — set
+`LLAMA_CPP_CHANNEL=stable` to track `vX.Y.Z` instead:
+
+```bash
+LLAMA_CPP_CHANNEL=stable ./install-local-ai.sh
+```
+
+A stable `vX.Y.Z` release ships no backend binaries of its own, only a
+pointer to the bleeding-edge build it was cut from; LocalAI resolves that
+pointer automatically either way, so `localai version` always reports the
+actual `llama.cpp` build installed, not just the channel tag.
+
 Custom install directory:
 
 ```bash
