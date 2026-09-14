@@ -510,7 +510,7 @@ Useful tuning variables:
 | `LOCALAI_REASONING_BUDGET` | Sets `--reasoning-budget` (token budget; `-1` unrestricted, `0` = answer immediately). Default unset. | `LOCALAI_REASONING_BUDGET=1024` |
 | `LOCALAI_REASONING_FORMAT` | Sets `--reasoning-format` (`none`/`deepseek`/`deepseek-legacy`). Default unset. | `LOCALAI_REASONING_FORMAT=deepseek` |
 | `LOCALAI_REASONING_PRESERVE` | `1` sets `--reasoning-preserve`, keeping the reasoning trace across turns. Default `0`. | `LOCALAI_REASONING_PRESERVE=1` |
-| `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint. See [Metrics](#metrics). | `LOCALAI_METRICS_ENABLED=0` |
+| `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint; `0` turns the system/GPU statistics collection off entirely (the generated config sets llama-swap's `performance.disabled: true`). See [Metrics](#metrics). | `LOCALAI_METRICS_ENABLED=0` |
 | `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). | `LOCALAI_PRELOAD_MODELS="deepseek-v4-flash"` |
 | `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. | `LOCALAI_EMBEDDING_TTL=300` |
 | `LOCALAI_MODELS_OVERRIDE_SUBDIR` | Subdirectory name for per-model override files. Default `models.d`. See [Per-Model Overrides](#per-model-overrides). | `LOCALAI_MODELS_OVERRIDE_SUBDIR=models.d` |
@@ -649,6 +649,11 @@ llama-server rebuild or extra flags required:
 ```bash
 curl -s http://127.0.0.1:11435/metrics
 ```
+
+Setting `LOCALAI_METRICS_ENABLED=0` turns that collection off: the generated
+config writes llama-swap's `performance.disabled: true`, so no system or GPU
+statistics are gathered (and `/metrics` has nothing to report). llama-swap
+collects these stats by default, so this is the only way to stop them.
 
 If you have [API keys](#api-keys) active, `/metrics` requires the same
 `Authorization: Bearer` header as every other endpoint — llama-swap doesn't
