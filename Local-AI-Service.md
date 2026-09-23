@@ -125,9 +125,10 @@ CPU mode is useful for compatibility testing, but larger models may be slow.
 ### CUDA
 
 CPU, Vulkan, ROCm, OpenVINO, and SYCL all install a prebuilt `llama.cpp`
-release. CUDA is different: upstream doesn't publish a portable prebuilt CUDA
-build (it's tied to one exact CUDA runtime version), so `LLAMA_CPP_BACKEND=cuda`
-builds `llama.cpp` from source against your own CUDA Toolkit instead. A CUDA
+release. Upstream now also publishes Ubuntu CUDA archives tied to specific
+runtime versions (12.8 and 13.4 as of September 22, 2026). LocalAI's
+`LLAMA_CPP_BACKEND=cuda` continues to build `llama.cpp` from source against
+your own CUDA Toolkit and GPU architecture. A CUDA
 install therefore takes noticeably longer than the other backends (a real
 compile, not a download), but produces a real speed advantage on NVIDIA
 hardware once built — measured on an RTX 3050 Laptop GPU, CUDA processed
@@ -419,6 +420,44 @@ Manual API check:
 curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
 ```
 
+## Browser Dashboard and Chat
+
+LocalAI 1.6.10 adds an explicit browser-opening option:
+
+```bash
+localai ui                         # print dashboard and chat URLs
+localai ui --open                  # open the dashboard on a Linux desktop
+localai ui --open MODEL_ID         # open one model's llama.cpp chat UI
+localai models                    # find the exact model ID
+```
+
+The dashboard is served by llama-swap at `/ui`; model chat is served through
+`/upstream/MODEL_ID/`. llama-swap v257 includes a searchable model picker,
+responsive chat, live generation statistics, and automatic model capability
+and context discovery after loading. No separate frontend installation is
+needed. Run `localai update` to update installed components and helper scripts.
+
+On SSH or a headless server, `localai ui` prints URLs without launching a
+browser. `--open` requires a graphical desktop and `xdg-open`. Open the URL
+from a browser that can reach the server; a loopback address refers to the
+machine where the browser runs.
+
+With API keys enabled, leave the browser login username blank and enter
+your saved API key as the password. `localai key list` only shows metadata;
+if you need a new secret, run `localai key create browser` and save the key
+printed once. Keys are never included in the printed URL.
+
+### Compatibility reviewed for 1.6.10
+
+Reviewed llama.cpp b10948 through b11118 and llama-swap v255 through v257.
+The stable llama.cpp channel is v0.4.1. Existing release selection, generated
+model commands, and llama-swap configuration remain compatible with these
+releases. LocalAI still tracks the latest release in the configured channel;
+these versions are a tested snapshot, not new pins.
+
+llama-swap's newer CORS options preserve the existing defaults when omitted;
+automatic capability discovery does not require new LocalAI settings.
+
 ## API Keys
 
 By default LocalAI has no authentication, matching llama-swap's own default —
@@ -652,7 +691,8 @@ curl -s http://127.0.0.1:11435/metrics
 
 Setting `LOCALAI_METRICS_ENABLED=0` turns that collection off: the generated
 config writes llama-swap's `performance.disabled: true`, so no system or GPU
-statistics are gathered (and `/metrics` has nothing to report). llama-swap
+statistics are gathered (`/metrics` returns HTTP 503 with
+`performance monitor not available` in v257). llama-swap
 collects these stats by default, so this is the only way to stop them.
 
 If you have [API keys](#api-keys) active, `/metrics` requires the same
@@ -664,9 +704,9 @@ curl -s http://127.0.0.1:11435/metrics \
   -H "Authorization: Bearer sk-localai-REPLACE_ME"
 ```
 
-llama-swap has no HTTP Basic Auth support (only Bearer `apiKeys`), so point
-Prometheus at a key with `bearer_token` (or `bearer_token_file` to avoid
-putting the secret in the scrape config itself):
+llama-swap accepts Bearer keys, `x-api-key`, and HTTP Basic with the key as
+the password. For Prometheus, use `bearer_token` (or `bearer_token_file` to
+avoid putting the secret in the scrape config itself):
 
 ```yaml
 scrape_configs:

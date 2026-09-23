@@ -10,6 +10,22 @@ This page covers the standalone [LocalAI](https://github.com/hossbit/local-ai-se
 server itself. If you're debugging ComAI's connection *to* a local provider
 (including LocalAI), see [Troubleshooting](Troubleshooting.md#local-provider-is-not-responding) instead.
 
+## Model Load or Unload Reports an API Error
+
+LocalAI 1.6.10 returns an error when a model load/unload request fails, or
+when `load all` / `unload all` cannot list models. An unreachable API is no
+longer reported as a successful load or an empty loaded-model list.
+
+Run `localai status`, `localai check`, and `localai logs` to check service,
+authentication, and model startup errors. After a model change, run
+`localai reload`. With the default swap policy, `load all` loads models in
+sequence; it does not guarantee they all remain in memory together.
+
+For browser access, run `localai ui` to print the URL. `localai ui --open`
+requires a desktop session and `xdg-open`; on SSH, open the printed address
+from a browser that can reach the server. Use a saved API key as the browser
+password when authentication is enabled; `localai key list` cannot reveal it.
+
 ## First Check
 
 ```bash
