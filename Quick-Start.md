@@ -111,3 +111,26 @@ tail -f ~/localcomai/logs/comai.log
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.webp" alt="ComAI local AI assistant for Linux" width="900">
 </div>
+
+## ComAI 2.8 Interactive Chat
+
+Start `comai chat`, or choose a provider and model for the session:
+
+```bash
+comai chat --provider ollama --model qwen2.5-coder:7b
+comai chat --provider local -f application.log
+```
+
+The terminal shows the active provider/model, an editable `You >` prompt,
+and separate `ComAI >` replies. `/help` lists controls; `/status` shows the
+session and retained context size; `/clear` starts fresh without deleting
+saved history; `/exit`, `/quit`, or Ctrl-D leaves chat. Prefix a message
+with `//` to send a literal leading slash.
+
+Startup options now apply to chat. Typed messages remain literal text,
+including provider names and CLI flags. A failed provider request leaves
+the conversation available for retry and is not added to its context.
+Code indentation, repeated lines, Unicode, and `..` paths are preserved.
+The default 12000-character context limit evicts complete older turns;
+it does not cap the current message or attached files. Piped chat omits
+interactive prompts, and `NO_COLOR` takes precedence over forced color.
