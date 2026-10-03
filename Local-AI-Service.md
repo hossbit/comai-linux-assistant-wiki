@@ -422,11 +422,10 @@ curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
 
 ## Browser Dashboard and Chat
 
-LocalAI includes browser shortcuts and a searchable model workspace:
+LocalAI is a Bash project with shortcuts to llama-swap’s built-in dashboard:
 
 ```bash
 localai ui --help                  # all destinations and examples
-localai ui --home --open           # searchable local model workspace
 localai ui --chat --open           # chat playground
 localai ui --models --open         # live model management
 localai ui --logs --open           # troubleshooting logs
@@ -436,11 +435,6 @@ localai ui --open                  # open the dashboard on a Linux desktop
 localai ui --open MODEL_ID         # open one model's llama.cpp chat UI
 localai models                    # find the exact model ID
 ```
-
-The `--home` workspace is a local HTML snapshot with light/dark styling and
-model search. Run it again after adding models to refresh the library. It
-stores no API keys and adds no server or runtime. On SSH, use the HTTP
-dashboard URLs instead of the local workspace file.
 
 The dashboard is served by llama-swap at `/ui`; model chat is served through
 `/upstream/MODEL_ID/`. llama-swap v257 includes a searchable model picker,

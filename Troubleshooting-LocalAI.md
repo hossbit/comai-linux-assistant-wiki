@@ -21,9 +21,8 @@ authentication, and model startup errors. After a model change, run
 `localai reload`. With the default swap policy, `load all` loads models in
 sequence; it does not guarantee they all remain in memory together.
 
-For a searchable model workspace, run `localai ui --home --open`. Run
-`localai ui --help` for direct chat, model, log, and performance shortcuts. The
-workspace is a local snapshot; regenerate it after adding models. Embedding
+Run `localai ui --open` to open llama-swap’s dashboard. Use
+`localai ui --help` for direct links to chat, models, logs, and performance. Embedding
 models use the embeddings API rather than the model chat UI. An empty
 library means no GGUF models were found in your configured models directory.
 
