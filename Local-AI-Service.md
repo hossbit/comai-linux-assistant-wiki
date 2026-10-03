@@ -582,8 +582,10 @@ setting to all of them:
   auto-fit logic is disabled whenever `-ngl` is set to an explicit number, so
   a hardcoded "does it fit" guess is actually less safe than `auto` and can
   OOM a model that would otherwise have partially offloaded successfully.
-- `--cache-type-k q8_0 --cache-type-v q8_0` — halves KV cache VRAM versus
-  `f16` at negligible quality cost.
+- `--cache-type-k f16 --cache-type-v f16` — compatible defaults, including
+  models with attention dimensions that do not support quantized cache.
+  Compatible models can opt into `CACHE_TYPE_K=q8_0` and `CACHE_TYPE_V=q8_0`
+  in their `models.d` overrides to reduce memory use.
 - `--flash-attn on`.
 
 Set `LOCALAI_AUTO_TUNE=0` to disable this and use the flat
