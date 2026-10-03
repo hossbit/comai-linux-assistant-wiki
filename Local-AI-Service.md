@@ -422,14 +422,25 @@ curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
 
 ## Browser Dashboard and Chat
 
-LocalAI 1.6.10 adds an explicit browser-opening option:
+LocalAI includes browser shortcuts and a searchable model workspace:
 
 ```bash
+localai ui --help                  # all destinations and examples
+localai ui --home --open           # searchable local model workspace
+localai ui --chat --open           # chat playground
+localai ui --models --open         # live model management
+localai ui --logs --open           # troubleshooting logs
+localai ui --performance --open    # live system statistics
 localai ui                         # print dashboard and chat URLs
 localai ui --open                  # open the dashboard on a Linux desktop
 localai ui --open MODEL_ID         # open one model's llama.cpp chat UI
 localai models                    # find the exact model ID
 ```
+
+The `--home` workspace is a local HTML snapshot with light/dark styling and
+model search. Run it again after adding models to refresh the library. It
+stores no API keys and adds no server or runtime. On SSH, use the HTTP
+dashboard URLs instead of the local workspace file.
 
 The dashboard is served by llama-swap at `/ui`; model chat is served through
 `/upstream/MODEL_ID/`. llama-swap v257 includes a searchable model picker,
@@ -502,6 +513,10 @@ API keys authenticate requests; they don't encrypt them. For LAN/WAN access,
 put a TLS-terminating reverse proxy in front and restrict it with a
 firewall.
 
+Config generation keeps the working configuration if a per-model setting fails
+validation. A requested `SPEC_DRAFT_SAMPLING` setting on an older engine fails
+with a clear upgrade message; clear the setting or update llama.cpp.
+
 ## LocalAI Configuration
 
 Installed LocalAI defaults live in:
@@ -539,6 +554,7 @@ Useful tuning variables:
 | `LOCALAI_DEVICE` | Sets `--device`, a comma-separated device list (e.g. `CUDA0,CUDA1`) to restrict which GPUs llama-server uses. | `LOCALAI_DEVICE=CUDA0,CUDA1` |
 | `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. | `LOCALAI_AUTO_TUNE=0` |
 | `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_TYPE=draft-mtp` |
+| `LOCALAI_SPEC_DRAFT_SAMPLING` | Optional `greedy` or `probabilistic` sampling for `draft-simple`/`draft-mtp` on supported engines. Empty preserves defaults. | `LOCALAI_SPEC_DRAFT_SAMPLING=probabilistic` |
 | `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. | `LOCALAI_SPEC_DRAFT_N_MAX=32` |
 | `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K` / `LOCALAI_SPEC_DRAFT_CACHE_TYPE_V` | KV cache quantization for the speculative draft model. Default unset. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K=q8_0` |
 | `LOCALAI_MTP_MODELS_DIR` | Directory of MTP (multi-token prediction) assistant models for speculative decoding; maps onto llama-server `--models-dir`. Empty (default) disables it. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_MTP_MODELS_DIR="~/ai/models/mtp"` |
@@ -595,6 +611,7 @@ with a per-model override (see [Per-Model Overrides](#per-model-overrides)):
 ```bash
 # conf/models.d/big-model.conf
 SPEC_DRAFT_MODEL=/path/to/small-draft-model.gguf
+SPEC_DRAFT_SAMPLING=probabilistic # optional; requires a newer llama.cpp
 SPEC_DRAFT_N_MIN=2              # optional; minimum tokens to draft per step
 SPEC_DRAFT_DEVICE=CUDA1         # optional; run the draft model on its own GPU
 SPEC_DRAFT_NGL=999              # optional; GPU layers for the draft model

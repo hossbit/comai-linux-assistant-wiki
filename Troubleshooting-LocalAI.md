@@ -21,6 +21,12 @@ authentication, and model startup errors. After a model change, run
 `localai reload`. With the default swap policy, `load all` loads models in
 sequence; it does not guarantee they all remain in memory together.
 
+For a searchable model workspace, run `localai ui --home --open`. Run
+`localai ui --help` for direct chat, model, log, and performance shortcuts. The
+workspace is a local snapshot; regenerate it after adding models. Embedding
+models use the embeddings API rather than the model chat UI. An empty
+library means no GGUF models were found in your configured models directory.
+
 For browser access, run `localai ui` to print the URL. `localai ui --open`
 requires a desktop session and `xdg-open`; on SSH, open the printed address
 from a browser that can reach the server. Use a saved API key as the browser
