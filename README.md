@@ -2,9 +2,6 @@
 
 **A terminal assistant for Linux questions, commands, files and logs.**
 
-Documentation for ComAI 2.10.0. ComAI is the client; a local server or cloud
-provider supplies the model. LocalAI is optional.
-
 ## Choose your next step
 
 | Your goal | Guide |
