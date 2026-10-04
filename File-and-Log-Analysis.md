@@ -96,3 +96,19 @@ Edit this in:
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.webp" alt="ComAI local AI assistant for Linux" width="900">
 </div>
+
+## Preview, recent logs and bounded input
+
+```bash
+comai context -f application.log
+comai context --tail-context -f application.log
+comai analyze --tail-context -f application.log
+tail -c 24000 application.log | comai analyze
+```
+
+`context` makes no model request. `--tail-context` selects the last bytes of
+attached files; use `tail` before piping when you want recent stdin logs.
+`input_max_bytes` limits the aggregate payload. Per-file `file_max_bytes` still
+applies; omitted and truncated excerpts are disclosed on stderr.
+
+[Configure limits](Configuration.md) · [Check provider health](Health-and-Diagnostics.md)

@@ -1,30 +1,24 @@
-# ComAI
-
+## Start
 - [Home](Home.md)
+- [Quick start](Quick-Start.md)
 - [Installation](Installation.md)
-- [Quick Start](Quick-Start.md)
+
+## Everyday use
 - [Providers](Providers.md)
 - [Configuration](Configuration.md)
-- [ComAI And LocalAI](ComAI-and-LocalAI.md)
-- [File and Log Analysis](File-and-Log-Analysis.md)
-- [Local AI Service](Local-AI-Service.md)
+- [Files and logs](File-and-Log-Analysis.md)
+
+## Operations
+- [Health and diagnostics](Health-and-Diagnostics.md)
+- [Updates and rollback](Updates-and-Rollback.md)
 - [Troubleshooting](Troubleshooting.md)
-- [LocalAI Troubleshooting](Troubleshooting-LocalAI.md)
 - [Uninstall](Uninstall.md)
+
+## Optional LocalAI
+- [How the projects fit together](ComAI-and-LocalAI.md)
+- [Local AI service](Local-AI-Service.md)
+- [LocalAI troubleshooting](Troubleshooting-LocalAI.md)
+
+## Reference
 - [FAQ](FAQ.md)
-- [Publishing](Publishing.md)
-
-## Common Tasks
-
-- [Install ComAI](Installation.md#install-comai)
-- [Use ComAI With LocalAI](ComAI-and-LocalAI.md)
-- [Secure LocalAI With API Keys](ComAI-and-LocalAI.md#securing-localai-with-api-keys)
-- [Use CUDA With LocalAI](Local-AI-Service.md#cuda)
-- [Switch LocalAI Backends](Local-AI-Service.md#switching-backends)
-- [Use Ollama](Providers.md#ollama)
-- [Use LM Studio](Providers.md#lm-studio)
-- [Use OpenAI](Providers.md#openai)
-- [Use OpenRouter](Providers.md#openrouter)
-- [Analyze a File](File-and-Log-Analysis.md#analyze-files)
-- [Scan Logs](File-and-Log-Analysis.md#scan-logs)
-- [Remove ComAI](Uninstall.md)
+- [Local validation](Local-Validation.md)

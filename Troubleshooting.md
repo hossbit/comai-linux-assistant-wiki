@@ -219,3 +219,7 @@ If you are working from a source checkout, reinstall from that checkout with:
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.webp" alt="ComAI local AI assistant for Linux" width="900">
 </div>
+
+## Structured diagnosis
+
+Start with `comai doctor --json` to distinguish authentication, missing model, timeout and unavailable-server failures. See [Health and diagnostics](Health-and-Diagnostics.md). For update failures, see [Updates and rollback](Updates-and-Rollback.md).

@@ -134,3 +134,7 @@ Code indentation, repeated lines, Unicode, and `..` paths are preserved.
 The default 12000-character context limit evicts complete older turns;
 it does not cap the current message or attached files. Piped chat omits
 interactive prompts, and `NO_COLOR` takes precedence over forced color.
+
+## Before your first file request
+
+Run `comai doctor --json`, then `comai context -f FILE` to inspect the selected input. See [Health and diagnostics](Health-and-Diagnostics.md) and [File and log analysis](File-and-Log-Analysis.md).

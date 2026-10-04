@@ -82,6 +82,7 @@ providers:
 max_tokens: 900
 timeout: 120
 log_file: logs/comai.log
+input_max_bytes: 96000
 file_max_bytes: 24000
 dir_context_max: 120
 error_regex: error|errors|failed|failure|exception|fatal|panic|timeout|warn|warning|traceback
@@ -117,6 +118,7 @@ error_intent_regex: error|errors|failed|failure|warning|warnings|problem|problem
 | `max_tokens` | Maximum requested answer length. |
 | `timeout` | Request timeout in seconds. |
 | `log_file` | Service/status log path. Relative paths are under the ComAI install directory. |
+| `input_max_bytes` | Aggregate user payload budget in bytes, including instructions, files, directory listings and knowledge where supported; default 96,000. |
 | `file_max_bytes` | Maximum bytes read from each file passed with `-f`. |
 | `dir_context_max` | Maximum current-directory entries used for context. |
 | `error_regex` | Pattern used to find likely problem lines in files. |
@@ -206,3 +208,14 @@ comai config set api_key_cmd "pass show openai"
 <div align="center">
   <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.webp" alt="ComAI local AI assistant for Linux" width="900">
 </div>
+
+## Aggregate input budget
+
+Set `input_max_bytes: 96000` in YAML or override it with
+`COMAI_INPUT_MAX_BYTES=96000`. Files share the remaining budget after request and
+prompt overhead; stderr identifies omitted or truncated files. Directory output
+uses at most one quarter of the budget. Piped input is read with a bounded
+buffer. Oversized complete requests are rejected before transmission.
+
+The byte budget is separate from `max_tokens`, which controls requested output
+length. `--tail-context` reads the end of attached files for recent log entries.

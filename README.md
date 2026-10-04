@@ -1,27 +1,57 @@
-# ComAI Wiki Source
+# ComAI documentation hub
 
-This repository contains the GitHub wiki pages for `hossbit/comai-linux-assistant`.
+**A terminal assistant for Linux questions, commands, files and logs.**
 
-<div align="center">
-  <a href="https://buymeacoffee.com/mirhh">
-    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
-  </a>
-</div>
+Documentation for ComAI 2.10.0. ComAI is the client; a local server or cloud
+provider supplies the model. LocalAI is optional.
 
-Start with:
+## Choose your next step
 
-- [Home](Home.md)
-- [Quick Start](Quick-Start.md)
-- [Installation](Installation.md)
-- [Providers](Providers.md)
-- [Configuration](Configuration.md)
-- [ComAI And LocalAI](ComAI-and-LocalAI.md)
-- [Local AI Service](Local-AI-Service.md)
-- [File and Log Analysis](File-and-Log-Analysis.md)
-- [Troubleshooting](Troubleshooting.md)
-- [LocalAI Troubleshooting](Troubleshooting-LocalAI.md)
-- [Uninstall](Uninstall.md)
+| Your goal | Guide |
+| --- | --- |
+| Start using ComAI | [Quick start](Quick-Start.md) → [Installation](Installation.md) |
+| Connect a model | [Providers](Providers.md) → [Configuration](Configuration.md) |
+| Inspect a file or log | [File and log analysis](File-and-Log-Analysis.md) |
+| Understand a failure | [Health and diagnostics](Health-and-Diagnostics.md) |
+| Update or return to a previous version | [Updates and rollback](Updates-and-Rollback.md) |
+| Use the optional LocalAI helper | [ComAI and LocalAI](ComAI-and-LocalAI.md) |
+| Remove the application | [Uninstall](Uninstall.md) |
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/comai-hero2.webp" alt="ComAI local AI assistant for Linux" width="900">
-</div>
+## First session
+
+```bash
+comai version
+comai doctor --json
+comai explain chmod 755
+comai context --tail-context -f application.log
+comai analyze --tail-context -f application.log
+```
+
+`context` previews local file and directory input without making a model
+request. `analyze` can send that input to your configured provider. Cloud file
+context requires confirmation or explicit opt-in.
+
+## Commands at a glance
+
+| Task | Command |
+| --- | --- |
+| Ask / converse | `comai ask "QUESTION"` / `comai chat` |
+| Inspect input before sending | `comai context -f FILE` |
+| Explain / analyze | `comai explain COMMAND` / `comai analyze -f FILE` |
+| Check active provider and model | `comai doctor --json` |
+| Check provider connections / models | `comai status` / `comai models` |
+| Configure | `comai setup` / `comai config show` |
+| Preview / apply update | `comai update --check` / `comai update` |
+| Restore previous application | `comai update --rollback` |
+
+## Reference and support
+
+[FAQ](FAQ.md) · [Troubleshooting](Troubleshooting.md) ·
+[LocalAI troubleshooting](Troubleshooting-LocalAI.md) ·
+[Local maintainer validation](Local-Validation.md)
+
+[Application repository](https://github.com/hossbit/comai-linux-assistant) ·
+[Releases](https://github.com/hossbit/comai-linux-assistant/releases) ·
+[Support development](https://buymeacoffee.com/mirhh)
+
+These Markdown pages are maintained in this documentation repository. Start at [Home](Home.md).
