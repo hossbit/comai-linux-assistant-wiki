@@ -1,27 +1,89 @@
 # Local AI Service
 
-<div align="center">
-  <a href="https://buymeacoffee.com/mirhh">
-    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Buy me a coffee" width="300">
-  </a>
-</div>
+LocalAI runs local GGUF models through llama.cpp and llama-swap. Its Bash
+commands manage installation, models, backends, and a local OpenAI-compatible
+API. You can use the upstream browser dashboard or connect another client.
 
-LocalAI is a separate local model server for GGUF models. It installs `llama.cpp`, `llama-swap`, helper scripts, a user service, and an OpenAI-compatible local API.
+Model support depends on your installed llama.cpp version. Chat, base
+completion, embedding, and reranking models use different request types;
+vision and audio models may need a matching projector.
 
-You can use LocalAI by itself, or point OpenAI-compatible clients at its local API.
+## Quick start
+
+### 1. Install
+
+```bash
+curl -fsSL https://hossbit.github.io/localai/install.sh | bash
+```
+
+The default backend is Vulkan. For CPU-only systems, use:
+
+```bash
+curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=cpu bash
+```
+
+### 2. Add a model
+
+Copy a compatible GGUF model into `~/ai/models/`. Use a chat or instruct
+model for your first chat request.
+
+```bash
+cp /path/to/MODEL.gguf ~/ai/models/
+localai reload
+localai start
+localai models
+```
+
+Replace `/path/to/MODEL.gguf` with your downloaded file. Find its exact
+model ID in the output of `localai models`.
+
+### 3. Check and open
+
+```bash
+localai check --chat
+localai ui --chat --open
+```
+
+On a server without a desktop, run `localai ui` to print the dashboard URL.
+
+| Default location | Purpose |
+| --- | --- |
+| `~/ai/models/` | GGUF model files |
+| `~/ai/conf/localai.conf` | Global settings |
+| `~/ai/conf/models.d/MODEL_ID.conf` | Settings for one model |
+| `http://127.0.0.1:11435/ui` | llama-swap dashboard |
+| `http://127.0.0.1:11435/v1` | Client API base URL |
+
+These are defaults. Use the URLs printed by `localai status` or `localai ui`
+if your installation uses a different port or directory.
+
+## Find what you need
+
+| I want to… | Read |
+| --- | --- |
+| Install in another directory or from source | [Installation options](#install-localai) |
+| Add a model or its split files | [Add models](#add-models) |
+| Start, stop, or check the service | [Daily commands](#start-stop-restart) |
+| Open chat or manage loaded models | [Browser dashboard](#browser-dashboard-and-chat) |
+| Connect a client or call the API | [Connect applications](#connect-applications) |
+| Measure speed | [Suggestions and benchmarks](#suggestions-and-benchmarks) |
+| Change one model's settings | [Per-model overrides](#per-model-overrides) |
+| Choose CPU, CUDA, or another backend | [Backend selection](#backend-selection) |
+| Protect requests with a key | [API keys](#api-keys) |
+| Solve a startup or model error | [Troubleshooting](#troubleshooting) |
+| Find every command | [Command reference](#commands) |
+
 
 ## Install LocalAI
 
-Install LocalAI when you want to run local GGUF models through an
-OpenAI-compatible API.
+Use the quick start above for a default installation. The following options
+cover custom directories, source installs, and pinned component versions.
 
 Default install:
 
 ```bash
 curl -fsSL https://hossbit.github.io/localai/install.sh | bash
 ```
-
-The public installer is served from `https://hossbit.github.io/localai/install.sh`. The LocalAI source repository keeps the project installer at the repository root and does not need a duplicate `site/localai` copy.
 
 CPU-only install for simple VMs, older machines, or systems without a supported
 GPU backend:
@@ -85,22 +147,500 @@ LLAMA_CPP_BACKEND=auto ./install-local-ai.sh
 The same `LLAMA_CPP_BACKEND=<name>` form also works piped through the
 one-line installer, e.g. `curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=vulkan bash`.
 
-Already installed? Add another backend with the `localai` CLI instead — no
-need to re-run the installer:
+Already installed? Use `localai backend install BACKEND` to add a backend
+without switching. See [Managing Multiple Backends](#managing-multiple-backends).
 
-```bash
-localai backend install cpu
-localai backend install vulkan
-localai backend install rocm
-localai backend install openvino
-localai backend install sycl-fp16
-localai backend install sycl-fp32
-localai backend install cuda
-localai backend install auto
+## Add Models
+
+Choose a model supported by your installed llama.cpp version. A filename alone
+does not guarantee compatibility. Follow the model publisher's guidance for
+context limits, pooling, templates, and projectors.
+
+Use a chat or instruct GGUF model for chat requests. For example:
+
+```text
+Qwen2.5-Coder-7B-Instruct-Q2_K.gguf
+Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
 ```
 
-This installs the backend into its own slot without switching to it. See
-[Switching Backends](#switching-backends) below to actually activate one.
+Place GGUF files under the LocalAI models directory:
+
+```text
+~/ai/models
+```
+
+Example with an existing file:
+
+```bash
+cp Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf ~/ai/models/
+localai reload
+localai start
+localai check
+localai models
+```
+
+Example with the Hugging Face CLI:
+
+```bash
+python3 -m pip install --user huggingface_hub
+hf auth login
+
+hf download bartowski/Qwen2.5-Coder-7B-Instruct-GGUF \
+  Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf \
+  --local-dir ~/ai/models
+```
+
+Some model repositories require a Hugging Face account and read token. See
+[Hugging Face access tokens](https://huggingface.co/docs/hub/security-tokens).
+
+The model ID exposed by LocalAI is the filename without `.gguf`:
+
+```text
+Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
+```
+
+becomes:
+
+```text
+Qwen2.5-Coder-7B-Instruct-Q4_K_M
+```
+
+Embedding models, such as many `bge` or `e5` files, are for embeddings and
+search-style workflows. They are not the right first choice for chat.
+
+Quantization tradeoffs:
+
+| Quantization | Use |
+| --- | --- |
+| Q2_K | Smallest, lower quality, useful for limited RAM or quick tests |
+| Q4_K_M | Better default balance for chat quality and memory |
+| Q6_K/Q8_0 | Higher quality, more memory |
+
+Use `localai suggest` after adding large models to get advisory runtime settings
+based on your installed models, RAM, backend, and detected GPU memory. The
+advisor uses the actual GGUF file size as the base estimate, not an exact
+parameter-count formula. Runtime memory also depends on context length, KV
+cache type, batch size, backend buffers, and operating-system headroom.
+
+### Split GGUF Models
+
+Split GGUF models are supported when shards use llama.cpp canonical naming:
+
+```text
+name-00001-of-00003.gguf
+name-00002-of-00003.gguf
+name-00003-of-00003.gguf
+```
+
+For a small number of split models, a flat layout works:
+
+```text
+~/ai/models/DeepSeek-V4-Flash-UD-IQ1_M-00001-of-00003.gguf
+~/ai/models/DeepSeek-V4-Flash-UD-IQ1_M-00002-of-00003.gguf
+~/ai/models/DeepSeek-V4-Flash-UD-IQ1_M-00003-of-00003.gguf
+```
+
+For many split models, use one folder per model:
+
+```text
+~/ai/models/deepseek-v4-flash/
+  DeepSeek-V4-Flash-UD-IQ1_M-00001-of-00003.gguf
+  DeepSeek-V4-Flash-UD-IQ1_M-00002-of-00003.gguf
+  DeepSeek-V4-Flash-UD-IQ1_M-00003-of-00003.gguf
+```
+
+LocalAI registers only the first shard and passes it to `llama-server`;
+llama.cpp loads the remaining shards from the same directory. If a folder
+contains one model, the folder name becomes the model ID.
+
+Files that look like split fragments but do not follow canonical naming are
+skipped with a warning. Rename shards to `name-00001-of-000NN.gguf`, keep all
+shards in one directory, or merge them:
+
+```bash
+llama-gguf-split --merge FIRST_SHARD.gguf OUTPUT.gguf
+```
+
+## Start, Stop, Restart
+
+Use the LocalAI command:
+
+```bash
+localai start
+localai stop
+localai restart
+```
+
+Or use the LocalAI user service directly:
+
+```bash
+systemctl --user start localai
+systemctl --user stop localai
+systemctl --user restart localai
+```
+
+Start LocalAI automatically when you log in:
+
+```bash
+systemctl --user enable --now localai
+```
+
+## Check Status
+
+```bash
+localai status
+localai check
+localai models
+```
+
+`localai check` verifies the process, port, and API model list. Add `--chat`
+to also round-trip a real chat completion against the first configured chat
+model, which confirms the model loads and generates:
+
+```bash
+localai check --chat
+```
+
+Manual API check:
+
+```bash
+curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
+```
+
+## Browser Dashboard and Chat
+
+LocalAI is a Bash project with shortcuts to llama-swap’s built-in dashboard:
+
+```bash
+localai ui --help                  # all destinations and examples
+localai ui --chat --open           # chat playground
+localai ui --models --open         # live model management
+localai ui --logs --open           # troubleshooting logs
+localai ui --performance --open    # live system statistics
+localai ui                         # print dashboard and chat URLs
+localai ui --open                  # open the dashboard on a Linux desktop
+localai ui --open MODEL_ID         # open one model's llama.cpp chat UI
+localai models                    # find the exact model ID
+```
+
+The dashboard is served by llama-swap at `/ui`; model chat is served through
+`/upstream/MODEL_ID/`. The dashboard provides chat and model management without a separate
+frontend installation. Run `localai update` to update installed components and helper scripts.
+
+On SSH or a headless server, `localai ui` prints URLs without launching a
+browser. `--open` requires a graphical desktop and `xdg-open`. Open the URL
+from a browser that can reach the server; a loopback address refers to the
+machine where the browser runs.
+
+With API keys enabled, leave the browser login username blank and enter
+your saved API key as the password. `localai key list` only shows metadata;
+if you need a new secret, run `localai key create browser` and save the key
+printed once. Keys are never included in the printed URL.
+
+
+## Connect Applications
+
+Set an OpenAI-compatible client's API base URL to:
+
+```text
+http://127.0.0.1:11435/v1
+```
+
+Choose an exact model ID from `localai models`. When [API keys](#api-keys)
+are enabled, use your saved key in the client's API-key field.
+
+The loopback address reaches LocalAI from the same computer. From another
+computer, use a reachable server address and configure authentication.
+
+### List models
+
+```bash
+curl -fsS http://127.0.0.1:11435/v1/models
+```
+
+### Send a chat request
+
+Replace `MODEL_ID` with your chat model's ID:
+
+```bash
+curl -fsS http://127.0.0.1:11435/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "MODEL_ID",
+    "messages": [{"role": "user", "content": "Reply with OK"}],
+    "max_tokens": 32
+  }'
+```
+
+For an authenticated API, add `-H "Authorization: Bearer YOUR_SAVED_KEY"`.
+
+| Model mode | API path |
+| --- | --- |
+| Chat / instruct | `/v1/chat/completions` |
+| Base completion | `/v1/completions` |
+| Embedding | `/v1/embeddings` |
+| Reranking | `/v1/rerank` |
+
+
+## Suggestions and Benchmarks
+
+Start with advice based on model file size, detected RAM/VRAM, and the active
+backend:
+
+```bash
+localai suggest
+localai suggest MODEL_ID
+```
+
+Suggestions are estimates. Context, cache, batching, model architecture, and
+other running applications also affect memory and speed.
+
+### Measure your current configuration
+
+```bash
+localai suggest --benchmark MODEL_ID --runs 3 --tokens 128
+```
+
+The command warms the model once, then reports median timings from measured
+requests. It can unload another model while loading the selected model.
+It does not change settings.
+
+| Option | When to use it |
+| --- | --- |
+| `--runs N` | Repeat 1–10 measured requests; default 3 |
+| `--tokens N` | Limit generated output to 1–4096 tokens; default 128 |
+| `--type auto` | Use configured model mode, then filename hints; default |
+| `--type chat` or `--type completion` | Select chat or base-model requests |
+| `--type embedding` or `--type reranking` | Select retrieval workloads |
+| `--prompt-file FILE` | Supply your own text input |
+| `--json` | Return samples and medians for comparison |
+
+### Save comparable results
+
+```bash
+localai suggest --benchmark MODEL_ID --runs 3 --tokens 128 --json > benchmark.json
+```
+
+Compare the same model, workload, token limit, and settings on idle hardware.
+Median request time includes API overhead; engine token speeds appear only
+when the response provides them. Embeddings and reranking may show request
+time without token speeds. This measures text workload speed, not answer
+quality, maximum context, or vision/audio performance.
+
+
+## Per-Model Overrides
+
+Global settings and auto-tuning apply to every model the same way. To
+override settings for one model, drop a file at
+`conf/models.d/<model-id>.conf`, using the same `<model-id>` shown by
+`localai models`. It's sourced as bash after auto-tuning runs, so it can set:
+
+| Term | Meaning |
+| --- | --- |
+| Context | The token space available to a request; larger values usually need more memory |
+| GPU layers | How much model work is placed on the GPU |
+| KV cache | Memory used to retain context during generation |
+| Parallel | How many requests can be processed at once |
+| Batch / microbatch | How input tokens are grouped for processing |
+
+### Start with a small override
+
+Only set values you need. This is an example, not a profile for every model:
+
+```bash
+# ~/ai/conf/models.d/MODEL_ID.conf
+CTX_SIZE=4096
+PARALLEL=1
+```
+
+`MODEL_ID` must match `localai models`. Keep context within the model's
+supported limit, then apply the change:
+
+```bash
+localai reload
+localai check
+```
+
+### Choose the model's mode
+
+Use an explicit mode for models whose filenames do not describe their purpose:
+
+| Setting | Intended workload |
+| --- | --- |
+| `MODEL_TYPE=chat` | Chat or instruct model |
+| `MODEL_TYPE=completion` | Base model using a plain prompt |
+| `MODEL_TYPE=embedding` | Text embedding model |
+| `MODEL_TYPE=reranking` | Query/document relevance model |
+
+For embeddings, leave `POOLING` empty to use the model default, or set
+`mean`, `cls`, `last`, `none`, or `rank` only as required by the model.
+
+### Keep batching within memory limits
+
+Each embedding input must fit the context and microbatch. Match
+`BATCH_SIZE` and `UBATCH_SIZE` to your chunk size and available memory.
+Longer documents should be split into chunks.
+
+Since 1.6.13, model settings apply after auto-tuning and reset to global defaults
+for each model. Use the supported variables directly instead of the internal
+`COMMON_EXTRA_ARGS`.
+
+<details>
+<summary>Advanced override variables — choose only those your model needs</summary>
+
+```bash
+# conf/models.d/MODEL_ID.conf
+CTX_SIZE=32768
+THREADS=8
+PARALLEL=1
+BATCH_SIZE=512
+UBATCH_SIZE=128
+JINJA=1
+MLOCK=0
+NO_MMAP=0
+N_GPU_LAYERS=999        # or "auto"/"all"
+CACHE_TYPE_K=q8_0
+CACHE_TYPE_V=q8_0
+FLASH_ATTN=1
+SPEC_TYPE=ngram-simple  # or "" to disable for this model
+SPEC_DRAFT_N_MAX=24
+TTL=0                   # seconds; 0 = never auto-unload
+ALIASES="gpt-4o-mini, coder"
+MMPROJ=/path/to/mmproj.gguf
+SET_TEMPERATURE=0.2
+SET_TOP_P=0.9
+EXTRA_ARGS="--no-mmproj-offload"
+SPLIT_MODE=none        # or "layer"/"tensor"; blank = llama-server's own default
+TENSOR_SPLIT=3,1
+MAIN_GPU=1
+DEVICE=CUDA1            # pin this one model to a specific GPU
+CPU_MOE=1               # or N_CPU_MOE=20; see MoE CPU Offload
+OVERRIDE_TENSOR="blk\.(2[0-9]|[3-9][0-9])\.ffn_.*_exps\.=CPU"
+REASONING=auto           # see Reasoning / Thinking Models
+REASONING_BUDGET=-1
+REASONING_FORMAT=deepseek
+REASONING_PRESERVE=1
+SPEC_DRAFT_MODEL=/path/to/small-draft-model.gguf  # see Speculative Decoding
+SPEC_DRAFT_N_MIN=2
+SPEC_DRAFT_DEVICE=CUDA1
+SPEC_DRAFT_NGL=999
+SPEC_DRAFT_CACHE_TYPE_K=q8_0
+SPEC_DRAFT_CACHE_TYPE_V=q8_0
+SPEC_DRAFT_CPU_MOE=1
+SPEC_DRAFT_N_CPU_MOE=20
+MMPROJ_URL=https://example.com/mmproj.gguf  # see Multimodal Models
+MMPROJ_OFFLOAD=1
+IMAGE_MIN_TOKENS=64
+IMAGE_MAX_TOKENS=1024
+LORA="/path/to/a.gguf, /path/to/b.gguf"
+LORA_SCALED=/path/to/c.gguf:0.5
+```
+
+</details>
+
+
+`ALIASES` becomes llama-swap `aliases:`; `SET_TEMPERATURE`/`SET_TOP_P` become
+a `filters.setParams` block. Embedding models get `LOCALAI_EMBEDDING_TTL`
+(120s default) automatically unless a `models.d` file sets `TTL` explicitly.
+
+`LORA`/`LORA_SCALED` accept a comma-separated list of adapter paths (plain
+paths for `LORA`, `path:scale` pairs for `LORA_SCALED`) and pass it straight
+through as llama-server's own `--lora`/`--lora-scaled` comma list.
+
+`EXTRA_ARGS` as a plain string (as above) works for simple space-separated
+flags. If a value itself needs embedded spaces or quotes -- for example
+Qwen's own thinking-mode toggle -- declare it as a bash array instead, and
+each element is safely quoted for you:
+
+```bash
+EXTRA_ARGS=(--chat-template-kwargs '{"enable_thinking":false}')
+```
+
+Don't hand-escape quotes into a plain-string `EXTRA_ARGS`; the generated
+`cmd:` line is re-parsed by llama-swap's own tokenizer, so characters like
+`"` and `{` surviving that second parse is exactly what the array form
+guarantees and manual escaping usually gets wrong.
+
+## LocalAI Configuration
+
+Installed LocalAI defaults live in:
+
+```text
+~/ai/conf/localai.conf
+```
+
+Environment variables can override runtime settings for one start:
+
+```bash
+LOCALAI_CTX_SIZE=8192 LOCALAI_N_GPU_LAYERS=20 localai start
+LOCALAI_FLASH_ATTN=1 LOCALAI_PARALLEL=2 localai start
+```
+
+Useful tuning variables:
+
+<details>
+<summary>Global configuration reference</summary>
+
+| Variable | Effect | Example |
+| --- | --- | --- |
+| `LOCALAI_CTX_SIZE` | Sets `--ctx-size`. | `LOCALAI_CTX_SIZE=16384` |
+| `LOCALAI_N_GPU_LAYERS` | Sets `--n-gpu-layers` (overridden per model when auto-tune is on; see below). | `LOCALAI_N_GPU_LAYERS=20` |
+| `LOCALAI_THREADS` | Sets `-t`. | `LOCALAI_THREADS=8` |
+| `LOCALAI_CACHE_TYPE_K` / `LOCALAI_CACHE_TYPE_V` | Set KV cache quantization (overridden per model when auto-tune is on). | `LOCALAI_CACHE_TYPE_K=q8_0 LOCALAI_CACHE_TYPE_V=q8_0` |
+| `LOCALAI_PARALLEL` | Adds `--parallel` when set. | `LOCALAI_PARALLEL=4` |
+| `LOCALAI_BATCH_SIZE` | Adds `--batch-size` when set. | `LOCALAI_BATCH_SIZE=2048` |
+| `LOCALAI_UBATCH_SIZE` | Adds `--ubatch-size` when set. | `LOCALAI_UBATCH_SIZE=512` |
+| `LOCALAI_FLASH_ATTN` | Adds `--flash-attn on` when set to `1` (overridden per model when auto-tune is on). | `LOCALAI_FLASH_ATTN=1` |
+| `LOCALAI_JINJA` | Adds `--jinja` when set to `1`. | `LOCALAI_JINJA=1` |
+| `LOCALAI_MLOCK` | Set to `1` to lock the model in RAM. Maps onto llama-server's `--load-mode` (`mmap+mlock`, or `mlock` if combined with `LOCALAI_NO_MMAP=1`). | `LOCALAI_MLOCK=1` |
+| `LOCALAI_NO_MMAP` | Set to `1` to disable memory-mapping the model. Maps onto `--load-mode` the same way as `LOCALAI_MLOCK`. | `LOCALAI_NO_MMAP=1` |
+| `LOCALAI_EXTRA_LLAMA_ARGS` | Appends extra single-line llama-server flags. | `LOCALAI_EXTRA_LLAMA_ARGS="--no-warmup"` |
+| `LOCALAI_SPLIT_MODE` | Sets `--split-mode` (`none`, `layer`, or `tensor`) for multi-GPU installs. See [Multi-GPU](#multi-gpu). | `LOCALAI_SPLIT_MODE=layer` |
+| `LOCALAI_TENSOR_SPLIT` | Sets `--tensor-split`, e.g. `3,1` to give GPU 0 three times GPU 1's share. | `LOCALAI_TENSOR_SPLIT=3,1` |
+| `LOCALAI_MAIN_GPU` | Sets `--main-gpu` (device index), used with `--split-mode none`. | `LOCALAI_MAIN_GPU=1` |
+| `LOCALAI_DEVICE` | Sets `--device`, a comma-separated device list (e.g. `CUDA0,CUDA1`) to restrict which GPUs llama-server uses. | `LOCALAI_DEVICE=CUDA0,CUDA1` |
+| `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. | `LOCALAI_AUTO_TUNE=0` |
+| `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_TYPE=draft-mtp` |
+| `LOCALAI_SPEC_DRAFT_SAMPLING` | Optional `greedy` or `probabilistic` sampling for `draft-simple`/`draft-mtp` on supported engines. Empty preserves defaults. | `LOCALAI_SPEC_DRAFT_SAMPLING=probabilistic` |
+| `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. | `LOCALAI_SPEC_DRAFT_N_MAX=32` |
+| `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K` / `LOCALAI_SPEC_DRAFT_CACHE_TYPE_V` | KV cache quantization for the speculative draft model. Default unset. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K=q8_0` |
+| `LOCALAI_MTP_MODELS_DIR` | Directory of MTP (multi-token prediction) assistant models for speculative decoding; maps onto llama-server `--models-dir`. Empty (default) disables it. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_MTP_MODELS_DIR="~/ai/models/mtp"` |
+| `LOCALAI_SPEC_DRAFT_CPU_MOE` / `LOCALAI_SPEC_DRAFT_N_CPU_MOE` | MoE CPU offload for the draft model (`--cpu-moe-draft` / `--n-cpu-moe-draft`). Default off. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_SPEC_DRAFT_N_CPU_MOE=2` |
+| `LOCALAI_CPU_MOE` | `1` keeps every MoE expert layer on CPU (`--cpu-moe`). Default `0`. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_CPU_MOE=1` |
+| `LOCALAI_N_CPU_MOE` | Keeps only the first N expert layers on CPU (`--n-cpu-moe N`); wins over `LOCALAI_CPU_MOE` when both are set. Default unset. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_N_CPU_MOE=4` |
+| `LOCALAI_REASONING` | Sets `--reasoning` (`on`/`off`/`auto`) for thinking models. Default unset (llama-server auto-detects from the chat template). See [Reasoning / Thinking Models](#reasoning--thinking-models). | `LOCALAI_REASONING=on` |
+| `LOCALAI_REASONING_BUDGET` | Sets `--reasoning-budget` (token budget; `-1` unrestricted, `0` = answer immediately). Default unset. | `LOCALAI_REASONING_BUDGET=1024` |
+| `LOCALAI_REASONING_FORMAT` | Sets `--reasoning-format` (`none`/`deepseek`/`deepseek-legacy`). Default unset. | `LOCALAI_REASONING_FORMAT=deepseek` |
+| `LOCALAI_REASONING_PRESERVE` | `1` sets `--reasoning-preserve`, keeping the reasoning trace across turns. Default `0`. | `LOCALAI_REASONING_PRESERVE=1` |
+| `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint; `0` turns the system/GPU statistics collection off entirely (the generated config sets llama-swap's `performance.disabled: true`). See [Metrics](#metrics). | `LOCALAI_METRICS_ENABLED=0` |
+| `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). | `LOCALAI_PRELOAD_MODELS="deepseek-v4-flash"` |
+| `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. | `LOCALAI_EMBEDDING_TTL=300` |
+| `LOCALAI_MODELS_OVERRIDE_SUBDIR` | Subdirectory name for per-model override files. Default `models.d`. See [Per-Model Overrides](#per-model-overrides). | `LOCALAI_MODELS_OVERRIDE_SUBDIR=models.d` |
+| `LOCALAI_API_KEY_FILE` | Key registry filename under `conf/`. Default `api-keys.tsv`. See [API Keys](#api-keys). | `LOCALAI_API_KEY_FILE=api-keys.tsv` |
+| `LOCALAI_REQUIRE_API_KEY` | `1` refuses to generate a config with zero active keys, so auth can never be silently disabled. Default `0`. See [API Keys](#api-keys). | `LOCALAI_REQUIRE_API_KEY=1` |
+
+</details>
+
+## Auto-Tuning
+
+On any non-CPU backend, `rebuild-config.sh` (run automatically by
+`start`/`restart`/`reload`) auto-tunes each model instead of applying one flat
+setting to all of them:
+
+- `--n-gpu-layers auto` — lets llama-server fit layers to free device memory
+  at load time. This is deliberately not a fixed number: llama-server's own
+  auto-fit logic is disabled whenever `-ngl` is set to an explicit number, so
+  a hardcoded "does it fit" guess is actually less safe than `auto` and can
+  OOM a model that would otherwise have partially offloaded successfully.
+- `--cache-type-k f16 --cache-type-v f16` — compatible defaults, including
+  models with attention dimensions that do not support quantized cache.
+  Compatible models can opt into `CACHE_TYPE_K=q8_0` and `CACHE_TYPE_V=q8_0`
+  in their `models.d` overrides to reduce memory use.
+- `--flash-attn on`.
+
+Set `LOCALAI_AUTO_TUNE=0` to disable this and use the flat
+`LOCALAI_N_GPU_LAYERS`/`LOCALAI_CACHE_TYPE_K`/`LOCALAI_CACHE_TYPE_V`/`LOCALAI_FLASH_ATTN`
+values from the table above for every model instead.
 
 ## Backend Selection
 
@@ -124,18 +664,14 @@ CPU mode is useful for compatibility testing, but larger models may be slow.
 
 ### CUDA
 
-CPU, Vulkan, ROCm, OpenVINO, and SYCL all install a prebuilt `llama.cpp`
-release. Upstream now also publishes Ubuntu CUDA archives tied to specific
-runtime versions (12.8 and 13.4 as of September 22, 2026). LocalAI's
-`LLAMA_CPP_BACKEND=cuda` continues to build `llama.cpp` from source against
-your own CUDA Toolkit and GPU architecture. A CUDA
-install therefore takes noticeably longer than the other backends (a real
-compile, not a download), but produces a real speed advantage on NVIDIA
-hardware once built — measured on an RTX 3050 Laptop GPU, CUDA processed
-prompts roughly 5x faster than Vulkan and generated tokens about 25-30%
-faster, same model, same settings. `auto` (see [Install
-LocalAI](#install-localai) above) picks CUDA when it's fully usable, else
-Vulkan, else CPU; explicit `cuda` requires it and fails clearly otherwise.
+CPU, Vulkan, ROCm, OpenVINO, and SYCL install prebuilt llama.cpp releases.
+LocalAI builds CUDA from source against your installed CUDA Toolkit and GPU
+architecture, so its initial installation takes longer.
+
+`auto` selects CUDA when the driver and compiler are usable, then Vulkan,
+then CPU. Explicit `cuda` requires CUDA and reports a clear error when its
+requirements are missing. Performance depends on the model, settings, and
+hardware; use [benchmarks](#suggestions-and-benchmarks) to compare.
 
 `auto` and explicit `cuda` both need:
 
@@ -268,201 +804,6 @@ Fedora doesn't ship the CUDA Toolkit itself in its own repositories — install
 it from [NVIDIA's official CUDA repo](https://developer.nvidia.com/cuda-downloads)
 for your Fedora/RHEL version before using `LLAMA_CPP_BACKEND=cuda` there.
 
-## Add Models
-
-Use a chat or instruct GGUF model for chat requests. For example:
-
-```text
-Qwen2.5-Coder-7B-Instruct-Q2_K.gguf
-Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
-```
-
-Place GGUF files under the LocalAI models directory:
-
-```text
-~/ai/models
-```
-
-Example with an existing file:
-
-```bash
-cp Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf ~/ai/models/
-localai start
-localai check
-localai models
-```
-
-Example with the Hugging Face CLI:
-
-```bash
-python3 -m pip install --user huggingface_hub
-hf auth login
-
-hf download bartowski/Qwen2.5-Coder-7B-Instruct-GGUF \
-  Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf \
-  --local-dir ~/ai/models
-```
-
-Some model repositories require a Hugging Face account and read token. See
-[Hugging Face access tokens](https://huggingface.co/docs/hub/security-tokens).
-
-The model ID exposed by LocalAI is the filename without `.gguf`:
-
-```text
-Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
-```
-
-becomes:
-
-```text
-Qwen2.5-Coder-7B-Instruct-Q4_K_M
-```
-
-Embedding models, such as many `bge` or `e5` files, are for embeddings and
-search-style workflows. They are not the right first choice for chat.
-
-Quantization tradeoffs:
-
-| Quantization | Use |
-| --- | --- |
-| Q2_K | Smallest, lower quality, useful for limited RAM or quick tests |
-| Q4_K_M | Better default balance for chat quality and memory |
-| Q6_K/Q8_0 | Higher quality, more memory |
-
-Use `localai suggest` after adding large models to get advisory runtime settings
-based on your installed models, RAM, backend, and detected GPU memory. The
-advisor uses the actual GGUF file size as the base estimate, not an exact
-parameter-count formula. Runtime memory also depends on context length, KV
-cache type, batch size, backend buffers, and operating-system headroom.
-
-### Split GGUF Models
-
-Split GGUF models are supported when shards use llama.cpp canonical naming:
-
-```text
-name-00001-of-00003.gguf
-name-00002-of-00003.gguf
-name-00003-of-00003.gguf
-```
-
-For a small number of split models, a flat layout works:
-
-```text
-~/ai/models/DeepSeek-V4-Flash-UD-IQ1_M-00001-of-00003.gguf
-~/ai/models/DeepSeek-V4-Flash-UD-IQ1_M-00002-of-00003.gguf
-~/ai/models/DeepSeek-V4-Flash-UD-IQ1_M-00003-of-00003.gguf
-```
-
-For many split models, use one folder per model:
-
-```text
-~/ai/models/deepseek-v4-flash/
-  DeepSeek-V4-Flash-UD-IQ1_M-00001-of-00003.gguf
-  DeepSeek-V4-Flash-UD-IQ1_M-00002-of-00003.gguf
-  DeepSeek-V4-Flash-UD-IQ1_M-00003-of-00003.gguf
-```
-
-LocalAI registers only the first shard and passes it to `llama-server`;
-llama.cpp loads the remaining shards from the same directory. If a folder
-contains one model, the folder name becomes the model ID.
-
-Files that look like split fragments but do not follow canonical naming are
-skipped with a warning. Rename shards to `name-00001-of-000NN.gguf`, keep all
-shards in one directory, or merge them:
-
-```bash
-llama-gguf-split --merge FIRST_SHARD.gguf OUTPUT.gguf
-```
-
-## Start, Stop, Restart
-
-Use the LocalAI command:
-
-```bash
-localai start
-localai stop
-localai restart
-```
-
-Or use the LocalAI user service directly:
-
-```bash
-systemctl --user start localai
-systemctl --user stop localai
-systemctl --user restart localai
-```
-
-Start LocalAI automatically when you log in:
-
-```bash
-systemctl --user enable --now localai
-```
-
-## Check Status
-
-```bash
-localai status
-localai check
-localai models
-```
-
-`localai check` verifies the process, port, and API model list. Add `--chat`
-to also round-trip a real chat completion against the first non-embedding
-model, which confirms the model loads and generates:
-
-```bash
-localai check --chat
-```
-
-Manual API check:
-
-```bash
-curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
-```
-
-## Browser Dashboard and Chat
-
-LocalAI is a Bash project with shortcuts to llama-swap’s built-in dashboard:
-
-```bash
-localai ui --help                  # all destinations and examples
-localai ui --chat --open           # chat playground
-localai ui --models --open         # live model management
-localai ui --logs --open           # troubleshooting logs
-localai ui --performance --open    # live system statistics
-localai ui                         # print dashboard and chat URLs
-localai ui --open                  # open the dashboard on a Linux desktop
-localai ui --open MODEL_ID         # open one model's llama.cpp chat UI
-localai models                    # find the exact model ID
-```
-
-The dashboard is served by llama-swap at `/ui`; model chat is served through
-`/upstream/MODEL_ID/`. llama-swap v257 includes a searchable model picker,
-responsive chat, live generation statistics, and automatic model capability
-and context discovery after loading. No separate frontend installation is
-needed. Run `localai update` to update installed components and helper scripts.
-
-On SSH or a headless server, `localai ui` prints URLs without launching a
-browser. `--open` requires a graphical desktop and `xdg-open`. Open the URL
-from a browser that can reach the server; a loopback address refers to the
-machine where the browser runs.
-
-With API keys enabled, leave the browser login username blank and enter
-your saved API key as the password. `localai key list` only shows metadata;
-if you need a new secret, run `localai key create browser` and save the key
-printed once. Keys are never included in the printed URL.
-
-### Compatibility reviewed for 1.6.10
-
-Reviewed llama.cpp b10948 through b11118 and llama-swap v255 through v257.
-The stable llama.cpp channel is v0.4.1. Existing release selection, generated
-model commands, and llama-swap configuration remain compatible with these
-releases. LocalAI still tracks the latest release in the configured channel;
-these versions are a tested snapshot, not new pins.
-
-llama-swap's newer CORS options preserve the existing defaults when omitted;
-automatic capability discovery does not require new LocalAI settings.
-
 ## API Keys
 
 By default LocalAI has no authentication, matching llama-swap's own default —
@@ -507,84 +848,40 @@ API keys authenticate requests; they don't encrypt them. For LAN/WAN access,
 put a TLS-terminating reverse proxy in front and restrict it with a
 firewall.
 
-Config generation keeps the working configuration if a per-model setting fails
-validation. A requested `SPEC_DRAFT_SAMPLING` setting on an older engine fails
-with a clear upgrade message; clear the setting or update llama.cpp.
 
-## LocalAI Configuration
+## Troubleshooting
 
-Installed LocalAI defaults live in:
+| What you see | What to check next |
+| --- | --- |
+| No models listed | Confirm GGUF files are in the configured models directory, then run `localai reload` |
+| Service is running but a request fails | Run `localai logs`; confirm the model mode and architecture support |
+| Out-of-memory error | Reduce context, concurrency, or batching; check GPU offload with `localai suggest MODEL_ID` |
+| Long embedding input fails | Split the input or adjust its context and microbatch limits |
+| CUDA installation fails | Check both `nvidia-smi` and `nvcc`; see [CUDA requirements](#cuda) |
+| Browser cannot connect | Use the printed service URL; `127.0.0.1` refers to the browser's own computer |
+| Request is unauthorized | Use an active saved API key; keys are displayed only when created or rotated |
+| Changed settings have no effect | Edit the correct model override, run `localai reload`, then check logs |
 
-```text
-~/ai/conf/localai.conf
-```
+If configuration validation fails, LocalAI keeps the working configuration.
+Correct the reported setting before retrying. An unsupported draft-sampling
+setting needs a compatible llama.cpp build or removal of that setting.
 
-Environment variables can override runtime settings for one start:
+See [Troubleshooting LocalAI](Troubleshooting-LocalAI.md) for more help.
+
+
+## Logs
+
+LocalAI service logs are written under the LocalAI install directory:
 
 ```bash
-LOCALAI_CTX_SIZE=8192 LOCALAI_N_GPU_LAYERS=20 localai start
-LOCALAI_FLASH_ATTN=1 LOCALAI_PARALLEL=2 localai start
+~/ai/logs/llama-swap.log
 ```
 
-Useful tuning variables:
+Watch logs:
 
-| Variable | Effect | Example |
-| --- | --- | --- |
-| `LOCALAI_CTX_SIZE` | Sets `--ctx-size`. | `LOCALAI_CTX_SIZE=16384` |
-| `LOCALAI_N_GPU_LAYERS` | Sets `--n-gpu-layers` (overridden per model when auto-tune is on; see below). | `LOCALAI_N_GPU_LAYERS=20` |
-| `LOCALAI_THREADS` | Sets `-t`. | `LOCALAI_THREADS=8` |
-| `LOCALAI_CACHE_TYPE_K` / `LOCALAI_CACHE_TYPE_V` | Set KV cache quantization (overridden per model when auto-tune is on). | `LOCALAI_CACHE_TYPE_K=q8_0 LOCALAI_CACHE_TYPE_V=q8_0` |
-| `LOCALAI_PARALLEL` | Adds `--parallel` when set. | `LOCALAI_PARALLEL=4` |
-| `LOCALAI_BATCH_SIZE` | Adds `--batch-size` when set. | `LOCALAI_BATCH_SIZE=2048` |
-| `LOCALAI_UBATCH_SIZE` | Adds `--ubatch-size` when set. | `LOCALAI_UBATCH_SIZE=512` |
-| `LOCALAI_FLASH_ATTN` | Adds `--flash-attn on` when set to `1` (overridden per model when auto-tune is on). | `LOCALAI_FLASH_ATTN=1` |
-| `LOCALAI_JINJA` | Adds `--jinja` when set to `1`. | `LOCALAI_JINJA=1` |
-| `LOCALAI_MLOCK` | Set to `1` to lock the model in RAM. Maps onto llama-server's `--load-mode` (`mmap+mlock`, or `mlock` if combined with `LOCALAI_NO_MMAP=1`). | `LOCALAI_MLOCK=1` |
-| `LOCALAI_NO_MMAP` | Set to `1` to disable memory-mapping the model. Maps onto `--load-mode` the same way as `LOCALAI_MLOCK`. | `LOCALAI_NO_MMAP=1` |
-| `LOCALAI_EXTRA_LLAMA_ARGS` | Appends extra single-line llama-server flags. | `LOCALAI_EXTRA_LLAMA_ARGS="--no-warmup --mlock"` |
-| `LOCALAI_SPLIT_MODE` | Sets `--split-mode` (`none`, `layer`, or `tensor`) for multi-GPU installs. See [Multi-GPU](#multi-gpu). | `LOCALAI_SPLIT_MODE=layer` |
-| `LOCALAI_TENSOR_SPLIT` | Sets `--tensor-split`, e.g. `3,1` to give GPU 0 three times GPU 1's share. | `LOCALAI_TENSOR_SPLIT=3,1` |
-| `LOCALAI_MAIN_GPU` | Sets `--main-gpu` (device index), used with `--split-mode none`. | `LOCALAI_MAIN_GPU=1` |
-| `LOCALAI_DEVICE` | Sets `--device`, a comma-separated device list (e.g. `CUDA0,CUDA1`) to restrict which GPUs llama-server uses. | `LOCALAI_DEVICE=CUDA0,CUDA1` |
-| `LOCALAI_AUTO_TUNE` | `1` (default on non-CPU backends) auto-computes per-model GPU layers/cache/flash-attn. Set `0` to force the flat values above onto every model. | `LOCALAI_AUTO_TUNE=0` |
-| `LOCALAI_SPEC_TYPE` | Speculative-decoding mode. Defaults to `ngram-simple` on non-CPU backends, `""` on CPU. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_TYPE=draft-mtp` |
-| `LOCALAI_SPEC_DRAFT_SAMPLING` | Optional `greedy` or `probabilistic` sampling for `draft-simple`/`draft-mtp` on supported engines. Empty preserves defaults. | `LOCALAI_SPEC_DRAFT_SAMPLING=probabilistic` |
-| `LOCALAI_SPEC_DRAFT_N_MAX` | Max tokens to draft per step for speculative decoding. Default `16`. | `LOCALAI_SPEC_DRAFT_N_MAX=32` |
-| `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K` / `LOCALAI_SPEC_DRAFT_CACHE_TYPE_V` | KV cache quantization for the speculative draft model. Default unset. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_SPEC_DRAFT_CACHE_TYPE_K=q8_0` |
-| `LOCALAI_MTP_MODELS_DIR` | Directory of MTP (multi-token prediction) assistant models for speculative decoding; maps onto llama-server `--models-dir`. Empty (default) disables it. See [Speculative Decoding](#speculative-decoding). | `LOCALAI_MTP_MODELS_DIR="~/ai/models/mtp"` |
-| `LOCALAI_SPEC_DRAFT_CPU_MOE` / `LOCALAI_SPEC_DRAFT_N_CPU_MOE` | MoE CPU offload for the draft model (`--cpu-moe-draft` / `--n-cpu-moe-draft`). Default off. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_SPEC_DRAFT_N_CPU_MOE=2` |
-| `LOCALAI_CPU_MOE` | `1` keeps every MoE expert layer on CPU (`--cpu-moe`). Default `0`. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_CPU_MOE=1` |
-| `LOCALAI_N_CPU_MOE` | Keeps only the first N expert layers on CPU (`--n-cpu-moe N`); wins over `LOCALAI_CPU_MOE` when both are set. Default unset. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_N_CPU_MOE=4` |
-| `LOCALAI_REASONING` | Sets `--reasoning` (`on`/`off`/`auto`) for thinking models. Default unset (llama-server auto-detects from the chat template). See [Reasoning / Thinking Models](#reasoning--thinking-models). | `LOCALAI_REASONING=on` |
-| `LOCALAI_REASONING_BUDGET` | Sets `--reasoning-budget` (token budget; `-1` unrestricted, `0` = answer immediately). Default unset. | `LOCALAI_REASONING_BUDGET=1024` |
-| `LOCALAI_REASONING_FORMAT` | Sets `--reasoning-format` (`none`/`deepseek`/`deepseek-legacy`). Default unset. | `LOCALAI_REASONING_FORMAT=deepseek` |
-| `LOCALAI_REASONING_PRESERVE` | `1` sets `--reasoning-preserve`, keeping the reasoning trace across turns. Default `0`. | `LOCALAI_REASONING_PRESERVE=1` |
-| `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint; `0` turns the system/GPU statistics collection off entirely (the generated config sets llama-swap's `performance.disabled: true`). See [Metrics](#metrics). | `LOCALAI_METRICS_ENABLED=0` |
-| `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). | `LOCALAI_PRELOAD_MODELS="deepseek-v4-flash"` |
-| `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. | `LOCALAI_EMBEDDING_TTL=300` |
-| `LOCALAI_MODELS_OVERRIDE_SUBDIR` | Subdirectory name for per-model override files. Default `models.d`. See [Per-Model Overrides](#per-model-overrides). | `LOCALAI_MODELS_OVERRIDE_SUBDIR=models.d` |
-| `LOCALAI_API_KEY_FILE` | Key registry filename under `conf/`. Default `api-keys.tsv`. See [API Keys](#api-keys). | `LOCALAI_API_KEY_FILE=api-keys.tsv` |
-| `LOCALAI_REQUIRE_API_KEY` | `1` refuses to generate a config with zero active keys, so auth can never be silently disabled. Default `0`. See [API Keys](#api-keys). | `LOCALAI_REQUIRE_API_KEY=1` |
-## Auto-Tuning
-
-On any non-CPU backend, `rebuild-config.sh` (run automatically by
-`start`/`restart`/`reload`) auto-tunes each model instead of applying one flat
-setting to all of them:
-
-- `--n-gpu-layers auto` — lets llama-server fit layers to free device memory
-  at load time. This is deliberately not a fixed number: llama-server's own
-  auto-fit logic is disabled whenever `-ngl` is set to an explicit number, so
-  a hardcoded "does it fit" guess is actually less safe than `auto` and can
-  OOM a model that would otherwise have partially offloaded successfully.
-- `--cache-type-k f16 --cache-type-v f16` — compatible defaults, including
-  models with attention dimensions that do not support quantized cache.
-  Compatible models can opt into `CACHE_TYPE_K=q8_0` and `CACHE_TYPE_V=q8_0`
-  in their `models.d` overrides to reduce memory use.
-- `--flash-attn on`.
-
-Set `LOCALAI_AUTO_TUNE=0` to disable this and use the flat
-`LOCALAI_N_GPU_LAYERS`/`LOCALAI_CACHE_TYPE_K`/`LOCALAI_CACHE_TYPE_V`/`LOCALAI_FLASH_ATTN`
-values from the table above for every model instead.
+```bash
+localai logs
+```
 
 ## Speculative Decoding
 
@@ -606,6 +903,7 @@ with a per-model override (see [Per-Model Overrides](#per-model-overrides)):
 
 ```bash
 # conf/models.d/big-model.conf
+SPEC_TYPE=draft-simple          # select a draft-model mode first
 SPEC_DRAFT_MODEL=/path/to/small-draft-model.gguf
 SPEC_DRAFT_SAMPLING=probabilistic # optional; requires a newer llama.cpp
 SPEC_DRAFT_N_MIN=2              # optional; minimum tokens to draft per step
@@ -692,6 +990,35 @@ docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/multi-gpu.md)
 for the full tradeoffs. Override any of these per model the same way as other
 tuning variables (see [Per-Model Overrides](#per-model-overrides)).
 
+## Multimodal Models
+
+Keep a vision/audio model in its own folder alongside a projector file named
+`mmproj*.gguf`:
+
+```text
+~/ai/models/gemma-vision/
+|-- gemma-vision.gguf
+`-- mmproj-gemma.gguf
+```
+
+LocalAI detects the projector file and adds `--mmproj` automatically. The
+projector file itself is never registered as its own model entry. Flat
+top-level models (not in their own folder) need an explicit `MMPROJ=` in a
+per-model override instead (see below).
+
+A few related per-model overrides are also available:
+
+```bash
+# conf/models.d/vision-model.conf
+MMPROJ_URL=https://example.com/mmproj.gguf  # download instead of a local MMPROJ path
+MMPROJ_OFFLOAD=1                            # offload the projector to GPU too
+IMAGE_MIN_TOKENS=64                         # minimum tokens per image
+IMAGE_MAX_TOKENS=1024                       # maximum tokens per image
+```
+
+`MMPROJ_URL` is only used when `MMPROJ` isn't already set (explicitly or via
+folder auto-detection); `MMPROJ_OFFLOAD` requires one of the two to be set.
+
 ## Metrics
 
 `LOCALAI_METRICS_ENABLED=1` (default) exposes llama-swap's built-in
@@ -740,150 +1067,21 @@ model IDs, as shown by `localai models`) to warm those models on
 `localai start`/`restart` instead of paying cold-start latency on the first
 request.
 
-## Multimodal Models
-
-Keep a vision/audio model in its own folder alongside a projector file named
-`mmproj*.gguf`:
-
-```text
-~/ai/models/gemma-vision/
-|-- gemma-vision.gguf
-`-- mmproj-gemma.gguf
-```
-
-LocalAI detects the projector file and adds `--mmproj` automatically. The
-projector file itself is never registered as its own model entry. Flat
-top-level models (not in their own folder) need an explicit `MMPROJ=` in a
-per-model override instead (see below).
-
-A few related per-model overrides are also available:
+## Update or Uninstall
 
 ```bash
-# conf/models.d/vision-model.conf
-MMPROJ_URL=https://example.com/mmproj.gguf  # download instead of a local MMPROJ path
-MMPROJ_OFFLOAD=1                            # offload the projector to GPU too
-IMAGE_MIN_TOKENS=64                         # minimum tokens per image
-IMAGE_MAX_TOKENS=1024                       # maximum tokens per image
+localai update             # active backend, llama-swap, and helpers
+localai update --all       # every installed backend
+localai version            # installed component versions
 ```
 
-`MMPROJ_URL` is only used when `MMPROJ` isn't already set (explicitly or via
-folder auto-detection); `MMPROJ_OFFLOAD` requires one of the two to be set.
+Updates preserve the supported installation layout; uninstalling before an
+ordinary update is unnecessary.
 
-## Per-Model Overrides
+`localai uninstall` removes runtime, configuration, and log directories while
+keeping `~/ai/models`. Add `--remove-models` only if you also want to delete
+the downloaded models.
 
-Global settings and auto-tuning apply to every model the same way. To
-override settings for one model, drop a file at
-`conf/models.d/<model-id>.conf`, using the same `<model-id>` shown by
-`localai models`. It's sourced as bash after auto-tuning runs, so it can set:
-
-```bash
-# conf/models.d/Qwen2.5-Coder-7B-Instruct-Q4_K_M.conf
-CTX_SIZE=32768
-THREADS=8
-PARALLEL=1
-BATCH_SIZE=512
-UBATCH_SIZE=128
-JINJA=1
-MLOCK=0
-NO_MMAP=0
-N_GPU_LAYERS=999        # or "auto"/"all"
-CACHE_TYPE_K=q8_0
-CACHE_TYPE_V=q8_0
-FLASH_ATTN=1
-SPEC_TYPE=ngram-simple  # or "" to disable for this model
-SPEC_DRAFT_N_MAX=24
-TTL=0                   # seconds; 0 = never auto-unload
-ALIASES="gpt-4o-mini, coder"
-MMPROJ=/path/to/mmproj.gguf
-SET_TEMPERATURE=0.2
-SET_TOP_P=0.9
-EXTRA_ARGS="--no-mmproj-offload"
-SPLIT_MODE=none        # or "layer"/"tensor"; blank = llama-server's own default
-TENSOR_SPLIT=3,1
-MAIN_GPU=1
-DEVICE=CUDA1            # pin this one model to a specific GPU
-CPU_MOE=1               # or N_CPU_MOE=20; see MoE CPU Offload
-OVERRIDE_TENSOR="blk\.(2[0-9]|[3-9][0-9])\.ffn_.*_exps\.=CPU"
-REASONING=auto           # see Reasoning / Thinking Models
-REASONING_BUDGET=-1
-REASONING_FORMAT=deepseek
-REASONING_PRESERVE=1
-SPEC_DRAFT_MODEL=/path/to/small-draft-model.gguf  # see Speculative Decoding
-SPEC_DRAFT_N_MIN=2
-SPEC_DRAFT_DEVICE=CUDA1
-SPEC_DRAFT_NGL=999
-SPEC_DRAFT_CACHE_TYPE_K=q8_0
-SPEC_DRAFT_CACHE_TYPE_V=q8_0
-SPEC_DRAFT_CPU_MOE=1
-SPEC_DRAFT_N_CPU_MOE=20
-MMPROJ_URL=https://example.com/mmproj.gguf  # see Multimodal Models
-MMPROJ_OFFLOAD=1
-IMAGE_MIN_TOKENS=64
-IMAGE_MAX_TOKENS=1024
-LORA="/path/to/a.gguf, /path/to/b.gguf"
-LORA_SCALED=/path/to/c.gguf:0.5
-```
-
-`ALIASES` becomes llama-swap `aliases:`; `SET_TEMPERATURE`/`SET_TOP_P` become
-a `filters.setParams` block. Embedding models get `LOCALAI_EMBEDDING_TTL`
-(120s default) automatically unless a `models.d` file sets `TTL` explicitly.
-
-Since LocalAI 1.6.13, batching, threads, template, and loading settings are
-applied after overrides and reset to global defaults for each model.
-For embedding models, keep inputs within the model context and microbatch.
-Set `BATCH_SIZE` and `UBATCH_SIZE` to fit each chunk and available memory.
-Split longer documents into chunks appropriate for that model.
-Use these variables directly instead of the internal `COMMON_EXTRA_ARGS`.
-Run `localai reload` to apply changes.
-
-For measured performance, run `localai suggest --benchmark MODEL --runs 3
---tokens 128`. One warm-up is excluded from the median timings. Add `--json`
-for machine-readable samples. Use identical prompts, token limits, and idle
-hardware when comparing results. The command loads the selected model and
-can unload another model, without changing configuration. Use `--type
-completion` for base models, `--type embedding` or `--type reranking` for
-retrieval workloads, and `--prompt-file FILE` for custom input text.
-This short benchmark does not test model quality
-or maximum context capacity.
-
-For models with arbitrary filenames, set `MODEL_TYPE=chat`, `completion`,
-`embedding`, or `reranking` explicitly. `POOLING=mean`, `cls`, `last`, `none`,
-or `rank` selects pooling when required; leaving it empty uses the model default.
-Model architectures, vision/audio capabilities, and context limits depend on
-the installed llama.cpp version and model metadata. Multimodal models require
-their matching projector; the benchmark currently measures text workloads.
-
-`LORA`/`LORA_SCALED` accept a comma-separated list of adapter paths (plain
-paths for `LORA`, `path:scale` pairs for `LORA_SCALED`) and pass it straight
-through as llama-server's own `--lora`/`--lora-scaled` comma list.
-
-`EXTRA_ARGS` as a plain string (as above) works for simple space-separated
-flags. If a value itself needs embedded spaces or quotes -- for example
-Qwen's own thinking-mode toggle -- declare it as a bash array instead, and
-each element is safely quoted for you:
-
-```bash
-EXTRA_ARGS=(--chat-template-kwargs '{"enable_thinking":false}')
-```
-
-Don't hand-escape quotes into a plain-string `EXTRA_ARGS`; the generated
-`cmd:` line is re-parsed by llama-swap's own tokenizer, so characters like
-`"` and `{` surviving that second parse is exactly what the array form
-guarantees and manual escaping usually gets wrong.
-
-## Logs
-
-LocalAI service logs are written under the LocalAI install directory:
-
-```bash
-~/ai/logs/llama-swap.log
-```
-
-Watch logs:
-
-```bash
-localai logs
-```
 
 ## Commands
 
@@ -897,7 +1095,7 @@ localai logs
 | `localai reload` | Rescan models and restart only if `config.yaml` would change |
 | `localai status` | Show service status |
 | `localai check` | Check process, port, and API health |
-| `localai check --chat` | Also round-trip a real chat completion against the first non-embedding model |
+| `localai check --chat` | Also round-trip a real chat completion against the first configured chat model |
 | `localai logs` | Follow service logs |
 
 ### Models
@@ -905,7 +1103,8 @@ localai logs
 | Command | Description |
 | --- | --- |
 | `localai models` | List installed GGUF models |
-| `localai suggest` | Suggest runtime settings based on installed models, RAM, and detected GPU memory |
+| `localai suggest [MODEL_ID]` | Show hardware and runtime advice |
+| `localai suggest --benchmark MODEL_ID` | Measure the selected model with repeated requests |
 | `localai load MODEL_NAME` | Load one model, or `all` |
 | `localai unload MODEL_NAME` | Unload one loaded model, or `all` |
 
@@ -936,32 +1135,10 @@ localai logs
 | `localai uninstall` | Uninstall LocalAI, keeping downloaded models |
 | `localai uninstall --remove-models` | Also delete downloaded GGUF models |
 
-LocalAI 1.2.4 and newer updates are layout-safe. The updater copies the
-installed `lib/` tree recursively, so future internal structure changes do not
-require uninstalling an older release first. If an older update leaves split CLI
-modules missing, `localai` attempts a one-time repair with the installed direct
-updater before failing.
+---
 
-`localai uninstall` removes the LocalAI helper/runtime files, including the
-installed `bin`, `conf`, `lib`, and `logs` directories. It keeps
-`~/ai/models` by default so downloaded GGUF models are not deleted. Use
-`localai uninstall --remove-models` only when you also want to delete the model
-files.
-
-Direct API:
-
-```bash
-curl http://127.0.0.1:11435/v1/models
-```
-
-Chat API:
-
-```bash
-curl http://127.0.0.1:11435/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "MODEL_NAME",
-    "messages": [{"role": "user", "content": "Reply with OK"}],
-    "max_tokens": 8
-  }'
-```
+<div align="center">
+  <a href="https://buymeacoffee.com/mirhh">
+    <img src="https://raw.githubusercontent.com/hossbit/mirassets/main/images/support.gif" alt="Support the project" width="220">
+  </a>
+</div>
