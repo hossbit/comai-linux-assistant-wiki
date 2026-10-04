@@ -1085,56 +1085,152 @@ the downloaded models.
 
 ## Commands
 
+Use these examples one at a time for the action you want.
+
+Replace `MODEL_ID` with an exact ID from `localai models`, and `KEY_ID`
+with an ID from `localai key list`. Replace file and directory paths with
+your own. Backend names are `cpu`, `vulkan`, `rocm`, `openvino`,
+`sycl-fp16`, `sycl-fp32`, `cuda`, or `auto`; availability depends on
+your hardware and installed dependencies.
+
 ### Service
 
-| Command | Description |
-| --- | --- |
-| `localai start` | Start the LocalAI service |
-| `localai stop` | Stop the LocalAI service |
-| `localai restart` | Restart the LocalAI service |
-| `localai reload` | Rescan models and restart only if `config.yaml` would change |
-| `localai status` | Show service status |
-| `localai check` | Check process, port, and API health |
-| `localai check --chat` | Also round-trip a real chat completion against the first configured chat model |
-| `localai logs` | Follow service logs |
+| Action | Example | What happens |
+| --- | --- | --- |
+| Start | `localai start` | Starts the service |
+| Stop | `localai stop` | Stops the service |
+| Restart | `localai restart` | Restarts the service |
+| Apply model changes | `localai reload` | Rescans models; restarts only when generated configuration changes |
+| Show status | `localai status` | Shows service and connection information |
+| Check API health | `localai check` | Checks process, port, and API model list |
+| Test chat generation | `localai check --chat` | Sends a short request to the first configured chat model |
+| Follow logs | `localai logs` | Shows live logs; press Ctrl+C to stop following |
 
 ### Models
 
-| Command | Description |
-| --- | --- |
-| `localai models` | List installed GGUF models |
-| `localai suggest [MODEL_ID]` | Show hardware and runtime advice |
-| `localai suggest --benchmark MODEL_ID` | Measure the selected model with repeated requests |
-| `localai load MODEL_NAME` | Load one model, or `all` |
-| `localai unload MODEL_NAME` | Unload one loaded model, or `all` |
+| Action | Example | What happens |
+| --- | --- | --- |
+| List models | `localai models` | Shows IDs, model modes, sizes, and loaded state |
+| Get advice for all models | `localai suggest` | Shows hardware and runtime advice |
+| Get advice for one model | `localai suggest MODEL_ID` | Limits advice to that model |
+| Load one model | `localai load MODEL_ID` | Sends a small request to load it |
+| Load all models | `localai load all` | Requests each model in turn; models may replace one another in memory |
+| Unload one model | `localai unload MODEL_ID` | Releases that loaded model |
+| Unload everything | `localai unload all` | Releases all loaded models |
+| Show suggestion help | `localai suggest --help` | Shows advice and benchmark usage |
 
-### Backends
+### Benchmarks
 
-| Command | Description |
-| --- | --- |
-| `localai switch BACKEND` | Switch the active backend — instant if already installed before, otherwise installs it first |
-| `localai backend list` | List installed backends, their version, disk size, and which one is active |
-| `localai backend install BACKEND` | Install a backend without switching to it |
-| `localai update` | Update llama.cpp, llama-swap, and helper scripts for the active backend |
-| `localai update --all` | Update every installed backend, not just the active one |
+| Action | Example | What happens |
+| --- | --- | --- |
+| Use default benchmark settings | `localai suggest --benchmark MODEL_ID` | One warm-up, then three measured requests |
+| Choose repeats and output limit | `localai suggest --benchmark MODEL_ID --runs 5 --tokens 256` | Measures five requests with up to 256 output tokens each |
+| Use automatic mode selection | `localai suggest --benchmark MODEL_ID --type auto` | Reads the configured mode, with filename hints as a fallback |
+| Measure chat | `localai suggest --benchmark MODEL_ID --type chat` | Uses chat messages |
+| Measure a base model | `localai suggest --benchmark MODEL_ID --type completion` | Uses a plain completion prompt |
+| Measure embeddings | `localai suggest --benchmark MODEL_ID --type embedding` | Sends text to the embeddings API |
+| Measure reranking | `localai suggest --benchmark MODEL_ID --type reranking` | Scores documents against a query |
+| Use your own input | `localai suggest --benchmark MODEL_ID --prompt-file ./prompt.txt` | Reads benchmark text from an existing file |
+| Save JSON results | `localai suggest --benchmark MODEL_ID --json > benchmark.json` | Saves measured samples and medians |
+
+You can combine options:
+
+```bash
+localai suggest --benchmark MODEL_ID --type completion \
+  --runs 3 --tokens 128 --prompt-file ./prompt.txt --json > benchmark.json
+```
+
+Supported limits: `--runs` is 1–10 and `--tokens` is 1–4096.
+The token limit applies to generated output; embedding and reranking requests
+use their own request shapes. Benchmarking loads the selected model and can
+unload another model. See [Suggestions and Benchmarks](#suggestions-and-benchmarks)
+for interpreting results.
+
+### Browser Dashboard and Model Chat
+
+Without `--open`, UI commands print a URL. Add `--open` to launch the
+destination on a Linux graphical desktop.
+
+| Action | Example | What happens |
+| --- | --- | --- |
+| Print dashboard URL | `localai ui` | Prints the dashboard URL |
+| Open dashboard | `localai ui --open` | Launches the dashboard |
+| Open chat playground | `localai ui --chat --open` | Opens llama-swap chat |
+| Manage models | `localai ui --models --open` | Opens loaded-model management |
+| View logs | `localai ui --logs --open` | Opens dashboard logs |
+| View performance | `localai ui --performance --open` | Opens live statistics when enabled |
+| View hardware | `localai ui --hardware --open` | Opens hardware information |
+| Open preferences | `localai ui --settings --open` | Opens dashboard settings |
+| View activity | `localai ui --activity --open` | Opens request activity |
+| Print one model's chat URL | `localai ui MODEL_ID` | Prints its llama.cpp chat URL |
+| Open one model's chat | `localai ui --open MODEL_ID` | Opens its llama.cpp chat interface |
+| Show UI help | `localai ui --help` | Lists supported destinations |
+
+Embedding and reranking models use their APIs rather than a model chat page.
+Use the models dashboard to manage them.
+
+### Backends and Updates
+
+| Action | Example | What happens |
+| --- | --- | --- |
+| List installed backends | `localai backend list` | Shows versions, disk size, and the active backend |
+| Install without switching | `localai backend install cpu` | Adds the CPU backend while keeping the active one |
+| Prepare CUDA | `localai backend install cuda` | Builds CUDA when its requirements are available |
+| Switch to CPU | `localai switch cpu` | Activates CPU and restarts the service |
+| Switch to Vulkan | `localai switch vulkan` | Activates Vulkan, installing it first if needed |
+| Switch to CUDA | `localai switch cuda` | Activates CUDA, installing it first if needed |
+| Choose automatically | `localai switch auto` | Selects a usable backend |
+| Show backend help | `localai backend help` | Lists backend commands and supported names |
+| Update active backend and components | `localai update` | Updates active llama.cpp, llama-swap, and helpers |
+| Update every installed backend | `localai update --all` | Updates every backend without changing which is active |
+| Update and leave stopped | `localai update --no-start` | Updates components and leaves the service stopped |
+| Update all and leave stopped | `localai update --all --no-start` | Combines both update options |
+
+To use another supported backend, replace the name in
+`localai backend install cpu` or `localai switch cpu`.
 
 ### API Keys
 
-| Command | Description |
-| --- | --- |
-| `localai key create [NAME]` | Create a new API key — prints the full secret exactly once |
-| `localai key list` | List keys (masked fingerprint only) |
-| `localai key revoke KEY_ID` | Revoke a key |
-| `localai key rotate KEY_ID` | Rotate a key's secret |
+Create and rotate commands print a secret once. Save it immediately.
+Key changes restart a running service; creating the first active key enables
+authentication.
 
-### Info & Uninstall
+| Action | Example | What happens |
+| --- | --- | --- |
+| Create a named key | `localai key create desktop` | Creates a key named desktop |
+| Create a default key | `localai key create` | Uses the name default |
+| List key IDs | `localai key list` | Shows metadata and masked fingerprints |
+| Rotate a key | `localai key rotate KEY_ID` | Creates a replacement secret and revokes the old key |
+| Revoke a key | `localai key revoke KEY_ID` | Deactivates the selected key |
+| Show key help | `localai key help` | Explains key commands and secret handling |
 
-| Command | Description |
-| --- | --- |
-| `localai version` | Show LocalAI and component versions |
-| `localai uninstall` | Uninstall LocalAI, keeping downloaded models |
-| `localai uninstall --remove-models` | Also delete downloaded GGUF models |
+### Help and Versions
 
+| Action | Example | What happens |
+| --- | --- | --- |
+| Show all commands | `localai help` | Displays the main command list |
+| Show help using a flag | `localai --help` | Displays the same main help |
+| Show installed versions | `localai version` | Shows LocalAI, llama.cpp, and llama-swap versions |
+
+The main help also accepts `localai -h` or simply `localai`.
+UI, key, and backend help accept `-h` and `--help` aliases.
+
+### Uninstall
+
+These commands remove installed files. The default keeps downloaded models;
+`--remove-models` deletes them too. Read the confirmation before proceeding.
+
+| Action | Example | What happens |
+| --- | --- | --- |
+| Preview supported options | `localai uninstall --help` | Shows help without uninstalling |
+| Uninstall and keep models | `localai uninstall` | Removes service, helpers, configuration, and logs |
+| Also delete models | `localai uninstall --remove-models` | Includes the downloaded models directory |
+| Select another installation | `localai uninstall --dir "$HOME/my-ai"` | Targets the specified install directory |
+| Remove an external llama-swap binary | `localai uninstall --remove-llama-swap` | Also removes a configured llama-swap binary outside the install tree |
+| Skip confirmation | `localai uninstall --force` | Removes the default installation without prompting; keeps models |
+
+Options can be combined, for example:
+`localai uninstall --dir "$HOME/my-ai" --remove-models`.
 ---
 
 <div align="center">
