@@ -779,6 +779,13 @@ override settings for one model, drop a file at
 ```bash
 # conf/models.d/Qwen2.5-Coder-7B-Instruct-Q4_K_M.conf
 CTX_SIZE=32768
+THREADS=8
+PARALLEL=1
+BATCH_SIZE=512
+UBATCH_SIZE=128
+JINJA=1
+MLOCK=0
+NO_MMAP=0
 N_GPU_LAYERS=999        # or "auto"/"all"
 CACHE_TYPE_K=q8_0
 CACHE_TYPE_V=q8_0
@@ -820,6 +827,32 @@ LORA_SCALED=/path/to/c.gguf:0.5
 `ALIASES` becomes llama-swap `aliases:`; `SET_TEMPERATURE`/`SET_TOP_P` become
 a `filters.setParams` block. Embedding models get `LOCALAI_EMBEDDING_TTL`
 (120s default) automatically unless a `models.d` file sets `TTL` explicitly.
+
+Since LocalAI 1.6.13, batching, threads, template, and loading settings are
+applied after overrides and reset to global defaults for each model.
+For embedding models, keep inputs within the model context and microbatch.
+Set `BATCH_SIZE` and `UBATCH_SIZE` to fit each chunk and available memory.
+Split longer documents into chunks appropriate for that model.
+Use these variables directly instead of the internal `COMMON_EXTRA_ARGS`.
+Run `localai reload` to apply changes.
+
+For measured performance, run `localai suggest --benchmark MODEL --runs 3
+--tokens 128`. One warm-up is excluded from the median timings. Add `--json`
+for machine-readable samples. Use identical prompts, token limits, and idle
+hardware when comparing results. The command loads the selected model and
+can unload another model, without changing configuration. Use `--type
+completion` for base models, `--type embedding` or `--type reranking` for
+retrieval workloads, and `--prompt-file FILE` for custom input text.
+This short benchmark does not test model quality
+or maximum context capacity.
+
+For models with arbitrary filenames, set `MODEL_TYPE=chat`, `completion`,
+`embedding`, or `reranking` explicitly. `POOLING=mean`, `cls`, `last`, `none`,
+or `rank` selects pooling when required; leaving it empty uses the model default.
+Model architectures, vision/audio capabilities, and context limits depend on
+the installed llama.cpp version and model metadata. Multimodal models require
+their matching projector; the benchmark currently measures text workloads.
+
 `LORA`/`LORA_SCALED` accept a comma-separated list of adapter paths (plain
 paths for `LORA`, `path:scale` pairs for `LORA_SCALED`) and pass it straight
 through as llama-server's own `--lora`/`--lora-scaled` comma list.
