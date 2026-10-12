@@ -608,6 +608,8 @@ Useful tuning variables:
 | `LOCALAI_SPEC_DRAFT_CPU_MOE` / `LOCALAI_SPEC_DRAFT_N_CPU_MOE` | MoE CPU offload for the draft model (`--cpu-moe-draft` / `--n-cpu-moe-draft`). Default off. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_SPEC_DRAFT_N_CPU_MOE=2` |
 | `LOCALAI_CPU_MOE` | `1` keeps every MoE expert layer on CPU (`--cpu-moe`). Default `0`. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_CPU_MOE=1` |
 | `LOCALAI_N_CPU_MOE` | Keeps only the first N expert layers on CPU (`--n-cpu-moe N`); wins over `LOCALAI_CPU_MOE` when both are set. Default unset. See [MoE CPU Offload](#moe-cpu-offload). | `LOCALAI_N_CPU_MOE=4` |
+| `LOCALAI_MOE_CACHE_MIB` | Optional GPU cache for CPU-offloaded MoE experts, in MiB. Default `0` (off); requires engine support. Prefer setting per model. | `LOCALAI_MOE_CACHE_MIB=256` |
+| `LOCALAI_DISABLE_KEEP_ALIVES` | Opens a fresh backend connection per request to work around intermittent streaming-related 502 errors. Default `0` (off); requires llama-swap v263+. Prefer setting per model. | `LOCALAI_DISABLE_KEEP_ALIVES=1` |
 | `LOCALAI_REASONING` | Sets `--reasoning` (`on`/`off`/`auto`) for thinking models. Default unset (llama-server auto-detects from the chat template). See [Reasoning / Thinking Models](#reasoning--thinking-models). | `LOCALAI_REASONING=on` |
 | `LOCALAI_REASONING_BUDGET` | Sets `--reasoning-budget` (token budget; `-1` unrestricted, `0` = answer immediately). Default unset. | `LOCALAI_REASONING_BUDGET=1024` |
 | `LOCALAI_REASONING_FORMAT` | Sets `--reasoning-format` (`none`/`deepseek`/`deepseek-legacy`). Default unset. | `LOCALAI_REASONING_FORMAT=deepseek` |
@@ -946,6 +948,35 @@ OVERRIDE_TENSOR="blk\.(2[0-9]|[3-9][0-9])\.ffn_.*_exps\.=CPU"
 See llama.cpp's own docs on
 [`--n-cpu-moe`/`--cpu-moe`](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md)
 and `--override-tensor` for the full pattern syntax.
+
+## Optional reliability and MoE settings
+Normal installations need no changes. These settings are off by default and
+can be added to `conf/models.d/<model-id>.conf` for a single model.
+
+If streaming requests occasionally fail with `502` or `proxy error: EOF`, use:
+
+```bash
+DISABLE_KEEP_ALIVES=1
+```
+
+This opens a fresh backend connection for each request and requires llama-swap
+v263 or newer. It does not change the public API or OpenCode configuration.
+
+For a compatible MoE model with experts offloaded to CPU, you can try a GPU
+expert cache:
+
+```bash
+CPU_MOE=1
+MOE_CACHE_MIB=256
+```
+
+The cache uses additional VRAM and requires llama-server support for
+`--moe-cache-mib`. Leave space for the context cache and other GPU allocations.
+Compare `localai suggest --benchmark <model-id>` before and after changing it;
+more cache is not always faster. Dense models do not benefit from this setting.
+Set either option to `0` to disable it. Run `localai reload` after editing
+to apply the configuration. If your runtime is too old,
+LocalAI explains how to update it and preserves the working configuration.
 
 ## Reasoning / Thinking Models
 
