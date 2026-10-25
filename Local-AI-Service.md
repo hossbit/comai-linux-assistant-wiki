@@ -617,6 +617,7 @@ Useful tuning variables:
 | `LOCALAI_METRICS_ENABLED` | `1` (default) exposes llama-swap's `/metrics` endpoint; `0` turns the system/GPU statistics collection off entirely (the generated config sets llama-swap's `performance.disabled: true`). See [Metrics](#metrics). | `LOCALAI_METRICS_ENABLED=0` |
 | `LOCALAI_PRELOAD_MODELS` | Comma/space-separated model IDs to warm on `start`/`restart`. See [Preloading Models](#preloading-models). | `LOCALAI_PRELOAD_MODELS="deepseek-v4-flash"` |
 | `LOCALAI_EMBEDDING_TTL` | Default `ttl` (seconds) applied to detected embedding models. Default `120`. | `LOCALAI_EMBEDDING_TTL=300` |
+| `LOCALAI_MAX_REQUEST_BODY_MB` | Global request-body size limit in MB. Blank keeps the upstream default (currently 250 MB). An explicit value requires llama-swap v266+. | `LOCALAI_MAX_REQUEST_BODY_MB=500` |
 | `LOCALAI_MODELS_OVERRIDE_SUBDIR` | Subdirectory name for per-model override files. Default `models.d`. See [Per-Model Overrides](#per-model-overrides). | `LOCALAI_MODELS_OVERRIDE_SUBDIR=models.d` |
 | `LOCALAI_API_KEY_FILE` | Key registry filename under `conf/`. Default `api-keys.tsv`. See [API Keys](#api-keys). | `LOCALAI_API_KEY_FILE=api-keys.tsv` |
 | `LOCALAI_REQUIRE_API_KEY` | `1` refuses to generate a config with zero active keys, so auth can never be silently disabled. Default `0`. See [API Keys](#api-keys). | `LOCALAI_REQUIRE_API_KEY=1` |
@@ -1049,6 +1050,26 @@ IMAGE_MAX_TOKENS=1024                       # maximum tokens per image
 
 `MMPROJ_URL` is only used when `MMPROJ` isn't already set (explicitly or via
 folder auto-detection); `MMPROJ_OFFLOAD` requires one of the two to be set.
+
+## Request size limit
+
+
+Normal installations need no changes. If an image, audio, or other large
+request receives `413 Request Entity Too Large`, you can increase the limit
+with llama-swap v266 or newer. Edit `~/ai/conf/localai.conf` (or the `conf`
+folder in your custom install location):
+
+```bash
+LOCALAI_MAX_REQUEST_BODY_MB=500
+```
+
+Then run `localai reload`. This limits the complete request body, including
+encoded attachments, for all models; it does not enable new model capabilities.
+Larger requests can use more system memory. Set the value to an empty string
+(`LOCALAI_MAX_REQUEST_BODY_MB=""`) to restore the upstream default, currently
+250 MB. Older llama-swap versions work normally while this setting is blank;
+LocalAI explains how to update if you request an unsupported setting.
+
 
 ## Metrics
 
