@@ -152,7 +152,7 @@ model APIs that are not supported by the proxy remain available in direct mode.
 
 ## Example models and downloads
 
-Choose **e** in the menu for a short list of examples and links. Weight storage
+Choose **e** in the menu to select and download an example model. Weight storage
 estimates exclude runtime memory and KV caches. Larger context and concurrent
 requests need additional memory. Omni models may require several stages and the
 [matching upstream deployment recipe](https://docs.vllm.ai/projects/vllm-omni/en/latest/models/supported_models/).
@@ -163,6 +163,19 @@ space. For gated models, accept the model's access conditions on Hugging Face
 and provide an account read token using `HF_TOKEN` or `LOCALVLLM_HF_TOKEN` in your
 environment. Downloads reuse cached files; rerun the same command after a failed
 connection to resume. Never put a token in an issue or log you share.
+
+## Apply or remove registrations
+
+`pull` and `add` preserve the running service. In automatic mode, apply new
+registrations using the menu's **c** action or `localvllm reload` when ready.
+Applying a changed launcher may restart the backend and interrupt requests.
+A failed application restores the previous launcher and attempts service recovery.
+
+Choose **x** in the menu, or run `localvllm remove MODEL`, to remove a registration.
+Stop the backend and select a different direct-mode model first. Weight files
+and the shared download cache are preserved. User-managed folders or links must
+be moved outside the model library first; they are never deleted by this command.
+Use `--backend omni` for Omni. Reload before starting after removing registrations.
 
 ## Add models
 
