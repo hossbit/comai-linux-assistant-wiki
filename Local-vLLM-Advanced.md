@@ -429,13 +429,55 @@ localvllm --backend vllm reload
 
 ### Multi-GPU
 
+Local vLLM can launch large models on a single machine with multiple GPUs.
+Model size, context length, and concurrency depend on available memory and
+upstream engine support. The manager does not impose a model-size limit;
+`MAX_MODEL_LEN=8192` is an overridable default, not a maximum.
+
+Select your model, then edit the override file reported by `localvllm models`.
+For a text model spread over four GPUs, a starting configuration is:
+
 ```bash
-TENSOR_PARALLEL_SIZE=2
-LOCALVLLM_CUDA_VISIBLE_DEVICES=0,1
+TENSOR_PARALLEL_SIZE=4
+CUDA_VISIBLE_DEVICES=0,1,2,3
+MAX_MODEL_LEN=32768
+MAX_NUM_SEQS=256
+GPU_MEMORY_UTILIZATION=0.90
 ```
 
-`LOCALVLLM_CUDA_VISIBLE_DEVICES` is global. A per-model `CUDA_VISIBLE_DEVICES`
-override also works.
+Choose a tensor-parallel size supported by the model and GPU topology. These
+values are examples, not a guarantee that a particular model fits. Increase
+context or concurrency only after checking memory use and benchmarking.
+`CUDA_VISIBLE_DEVICES` in a model override controls that model; the global
+alternative is `LOCALVLLM_CUDA_VISIBLE_DEVICES`.
+
+Additional native vLLM options go in the same file as a Bash array. For example,
+when the hardware and model support pipeline parallelism:
+
+```bash
+EXTRA_ARGS=(--pipeline-parallel-size 2)
+```
+
+Tensor and pipeline parallelism multiply the GPU count. With tensor parallelism
+4 and pipeline parallelism 2, select eight GPUs. See the
+[upstream parallelism and scaling guide](https://docs.vllm.ai/en/latest/serving/parallelism_scaling/)
+for topology, model constraints, and multi-node deployment. This manager runs
+services on one host; it does not provision a distributed cluster.
+
+Apply and measure the selected text model:
+
+```bash
+localvllm --backend vllm reload
+localvllm --backend vllm suggest --benchmark MODEL_ID
+```
+
+For Omni, use its own model override and the upstream deployment recipe for
+that model. Omni stages may need different GPU placement or parallelism; do
+not assume a text-model recipe applies to every Omni model. When running both
+backends, assign separate GPUs or budget shared GPU memory explicitly.
+
+Multi-GPU launcher generation is covered by local regression tests. Actual
+multi-GPU performance has not been validated on this project's test laptop.
 
 ### Sleep mode (fast unload/wake)
 
