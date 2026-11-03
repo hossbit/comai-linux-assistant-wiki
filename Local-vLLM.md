@@ -205,10 +205,11 @@ localvllm add /path/to/model    # Register an existing complete folder
 localvllm mode                 # Show the serving mode
 localvllm status                # Server status
 localvllm models                # Available models
-localvllm ui                    # API documentation and URL
+localvllm ui --open             # API docs or model dashboard
 localvllm doctor all            # Diagnostics
 localvllm backend install omni   # Install or repair Omni
-localvllm update                # Update installed backends
+localvllm update                # Active backend, llama-swap and helpers
+localvllm update --all          # Every installed backend
 ```
 
 [Full command reference](Local-vLLM-Advanced.md#commands).

@@ -8,7 +8,7 @@ This page contains advanced options and the complete reference. Start with the
 
 - [Backends](#two-isolated-backends) and [requirements](#requirements)
 - [Installation](#install), [AMD and CPU setup](#amd-and-cpu-installation), and [model setup](#add-models)
-- [Commands](#commands) and [configuration](#configuration)
+- [Commands](#commands), [serving modes](#direct-and-automatic-serving), and [configuration](#configuration)
 - [API usage](#use-the-server), [API keys](#api-keys), and [security](#security)
 - [Updates](#update), [uninstall](#uninstall), and [troubleshooting](#troubleshooting)
 
@@ -47,7 +47,8 @@ unless changed with `localvllm backend default omni`).
 - Per-backend model registries and per-model override files
 - Automatic model discovery from each backend's model directory
 - A systemd user service per backend
-- A single `localvllm` CLI for start/stop, models, keys, doctor, update, uninstall
+- A guided model menu plus direct CLI commands for downloads, imports, serving, keys, diagnostics and updates
+- Direct serving by default, with optional llama-swap routing and a model dashboard
 - Hardware-aware setting suggestions and a small live benchmark
 - Optional vLLM sleep mode for releasing VRAM without stopping the process
 - Atomic launcher generation and transactional `use`; guarded, locked key changes
@@ -273,6 +274,10 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 
 | Command | Purpose |
 | --- | --- |
+| `localvllm` / `localvllm menu` / `localvllm setup` | Open guided model management in a terminal. |
+| `localvllm pull ORG/MODEL [--revision REF]` | Download/register a model without selecting a different active model. |
+| `localvllm add /path/to/model` | Register a complete existing folder without moving or copying it. |
+| `localvllm mode [direct\|swap]` | Show/change the selected backend's serving mode. |
 | `localvllm start [BACKEND\|all]` | Start one or both services. |
 | `localvllm stop [BACKEND\|all]` | Stop services and release GPU memory. |
 | `localvllm restart [BACKEND\|all]` | Restart services. |
@@ -281,11 +286,11 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 | `localvllm check [--chat] [BACKEND\|all]` | Check `/health`, `/v1/models`, optionally chat. |
 | `localvllm logs [BACKEND]` | Follow one service's current log (previous logs are rotated). |
 | `localvllm metrics [--watch] [BACKEND]` | Show vLLM Prometheus metrics: queue, KV cache, throughput. |
-| `localvllm models [--json] [BACKEND]` | List that backend's models. |
+| `localvllm models [--json\|--paths] [BACKEND]` | List that backend's models. |
 | `localvllm use MODEL` | Select the model for the current backend. |
-| `localvllm load [MODEL]` | Start the service, or wake it from sleep mode. |
-| `localvllm unload` | Sleep the model when sleep mode is on, else stop the service. |
-| `localvllm ui [--open]` | Print vLLM API docs and OpenAI base URL. |
+| `localvllm load [MODEL]` | Start/wake the service; in automatic mode, load the requested model. |
+| `localvllm unload` | Direct: sleep/stop the model. Automatic: unload models while keeping the router ready. |
+| `localvllm ui [--open] [--dashboard]` | Print/open native API docs or the automatic-mode dashboard. |
 | `localvllm suggest [MODEL]` | Suggest TP, memory, context, and batching settings. |
 | `localvllm suggest --benchmark MODEL` | Measure the running server. |
 | `localvllm key ...` | Manage the current backend's active API key. |
@@ -293,8 +298,8 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 | `localvllm backend install NAME` | Install/repair one backend. |
 | `localvllm backend default NAME` | Change the default backend. |
 | `localvllm doctor [--json] [BACKEND\|all]` | Diagnose Python, vLLM, GPU, model, port, keys, pip consistency. |
-| `localvllm update [--backend NAME] [--all]` | Update packages and helper scripts. |
-| `localvllm version [BACKEND\|all]` | Show versions and active models. |
+| `localvllm update [--backend NAME] [--all]` | Update the active backend, managed llama-swap and helpers; `--all` updates every installed backend. |
+| `localvllm version [BACKEND\|all]` | Show manager, engine, Python and optional llama-swap versions, paths and serving modes. |
 | `localvllm uninstall` | Remove both backends; models are kept by default. |
 
 Machine-readable output:
@@ -634,12 +639,17 @@ that model's recipe.
 
 ### Web UI
 
-vLLM does not ship a chat UI. `localvllm ui` prints:
+`localvllm ui --open` opens the interface for the selected backend and mode:
 
-- API docs: `http://127.0.0.1:8000/docs`
-- OpenAI base URL: `http://127.0.0.1:8000/v1`
+| Mode | vLLM default URL | Omni default URL |
+| --- | --- | --- |
+| Direct: native API documentation | `http://127.0.0.1:8000/docs` | `http://127.0.0.1:8091/docs` |
+| Automatic: llama-swap dashboard | `http://127.0.0.1:8000/ui` | `http://127.0.0.1:8091/ui` |
 
-Point Open WebUI, LibreChat, or any OpenAI-compatible client at the base URL.
+Use `--backend omni` to target Omni. In automatic mode, `--dashboard` explicitly
+selects the model dashboard. Without `--open`, URLs are printed for headless use.
+The API base remains `/v1` on the selected backend's port in either mode, so
+any compatible client can connect. Direct mode does not install a chat UI.
 
 ### Metrics
 
@@ -650,8 +660,9 @@ localvllm metrics vllm
 localvllm metrics --watch omni
 ```
 
-This shows request queue depth, running requests, KV-cache usage, and
-throughput. Use it together with `nvidia-smi` when checking whether both
+In direct mode this shows request queue depth, running requests, KV-cache usage,
+and throughput. In automatic mode the endpoint returns router metrics; the
+dashboard shows routed model status and logs. Use it together with `nvidia-smi` when checking whether both
 backends can coexist on one GPU.
 
 ## API keys
@@ -822,8 +833,8 @@ and pin both versions when needed. The pip log is at
 
 ### `use` succeeds but the launcher will not generate
 
-The model must be a Hugging Face directory with `config.json` or a supported
-model file. GGUF has additional requirements; see [GGUF models](#gguf-models). Run `localvllm models` to see what was discovered. For remote models,
+A model folder needs `config.json`, or `model_index.json` for supported Omni
+diffusion pipelines, together with every required model component. GGUF has additional requirements; see [GGUF models](#gguf-models). Run `localvllm models` to see what was discovered. For remote models,
 the first start downloads weights and can take a long time.
 
 ### Inspect logs
