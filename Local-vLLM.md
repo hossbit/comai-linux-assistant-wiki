@@ -72,7 +72,28 @@ depend on your specific configuration; see [platform notes](#platform-notes).
   for the version you are installing. This manager cannot guarantee matching
   wheels across all ROCm stacks.
 
-These platform combinations have not all been tested by this project.
+### Platform checks
+
+| Platform | Manager behavior | Requirement outside the manager |
+| --- | --- | --- |
+| Linux ARM64 | Accepts `aarch64`/`arm64`; automatic routing selects the ARM64 binary | A wheel matching CPU architecture, GPU and glibc |
+| Fedora/RHEL | Installs system dependencies using `dnf` or `yum`; isolated Python avoids replacing system Python | Supported OS release, drivers and upstream wheel ABI |
+| AMD ROCm | Selects Python 3.12; verifies PyTorch has ROCm support after installation/update | Exact ROCm vLLM version and matching wheel index |
+| Several GPUs | Preserves device masks and per-model parallelism settings | Model topology, GPU interconnect and enough memory |
+
+ROCm wheel selection must use an exact version, including its ROCm suffix,
+with the matching index from the [official instructions](https://github.com/vllm-project/vllm/blob/main/docs/getting_started/installation/gpu.rocm.inc.md).
+Simply adding an extra index to a `latest` installation can still select a
+CUDA wheel. The manager rejects a non-ROCm PyTorch build when ROCm is requested.
+For Omni, pin the matching vLLM/Omni release pair and follow its
+[ROCm deployment instructions](https://github.com/vllm-project/vllm-omni/blob/main/docs/getting_started/installation/gpu/rocm.inc.md).
+Older RHEL releases can have an insufficient glibc; installing a newer Python
+alone does not resolve that. Use an upstream-supported OS or container workflow.
+The manager currently manages native virtual environments, not containers.
+
+Installer regression checks simulate ARM64 and Red Hat paths; this does not
+constitute real inference testing on those machines. Real AMD, ARM64, Red Hat
+and multi-GPU inference still require access to matching hardware.
 
 ## Serving modes
 
