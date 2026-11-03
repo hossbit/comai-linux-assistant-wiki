@@ -331,6 +331,39 @@ localvllm status all
 Both services listen on loopback by default, on different ports. Check
 `nvidia-smi` before starting both: two models can easily exceed one GPU's VRAM.
 
+## Direct and automatic serving
+
+Use `localvllm [--backend vllm|omni] mode direct|swap` to change one backend.
+Direct remains the default; the engine's native API and tuning are retained.
+Automatic mode uses a separate llama-swap instance for each backend, on that
+backend's original port. Requests select models by the IDs from `/v1/models`.
+Generated upstream workers bind to loopback on dynamically assigned ports,
+using the same model overrides and isolated Python environment as direct mode.
+
+Automatic mode uses the backend's existing active API key at the proxy. Private
+loopback workers do not duplicate authentication; they should not be exposed.
+The dashboard and administration APIs should remain private. Automatic mode
+currently refuses non-loopback listeners. Request capture buffers are disabled
+by default in the generated configuration.
+
+`localvllm load MODEL` loads a routed model; `localvllm unload` releases routed
+models while leaving the proxy ready. `localvllm stop` stops the full backend.
+`localvllm ui --dashboard --open` opens its dashboard. In direct mode, existing
+load/unload and API-documentation behavior is preserved.
+
+llama-swap is installed on first enable from its pinned official release with
+SHA256 verification. `LOCALVLLM_LLAMA_SWAP_BIN` can select an existing executable.
+Generated router state lives under `conf/backends/BACKEND/router/`; do not edit
+those generated files. Mode state is in `conf/backends/BACKEND/serving-mode`.
+Use model override files for tuning. Adding models or changing their settings
+refreshes the router configuration and may restart its workers.
+
+Omni worker generation preserves `--omni`, stage/deployment arguments and native
+engine tuning mode. Common chat, embedding, image and audio proxy paths are
+covered by local HTTP integration tests. Use direct mode for upstream endpoints
+or protocols not supported by the selected llama-swap version. Multi-node
+orchestration remains an upstream deployment concern.
+
 ## Configuration
 
 ### Global defaults

@@ -32,13 +32,14 @@ curl -fsSL https://hossbit.github.io/localvllm/install.sh | bash
 Open a new terminal, then follow the prompts:
 
 ```bash
-localvllm setup
+localvllm
 ```
 
-Choose **1** for text or **2** for a supported multimodal model. The setup
-installs the chosen engine if needed, asks for a Hugging Face model ID or a
-local model name, and offers to start the server. First startup may download
-model weights; choose a model that fits your available memory and GPU.
+The menu lists your models and lets you download a model, add a folder, start
+or stop serving, and open the web interface. Choose **b** to manage vLLM or
+Omni; both have the same workflow and separate model lists. If an engine is
+missing, the menu offers to install it. Choose a compatible model that fits
+your hardware. `localvllm menu` and `localvllm setup` open the same menu.
 
 The default installation directory is `~/ai-vllm`. If `localvllm` is not found,
 open a new terminal or add `~/.local/bin` to your `PATH`.
@@ -73,11 +74,64 @@ depend on your specific configuration; see [platform notes](#platform-notes).
 
 These platform combinations have not all been tested by this project.
 
-## Add models
+## Serving modes
 
-The simplest way is `localvllm setup`. You can also run:
+**Direct is the default.** Your client connects straight to vLLM or Omni,
+without a proxy. Select a model in the menu to switch and start it.
+
+**Automatic switching is optional.** llama-swap lists all registered models on
+the same API address and starts the requested model on demand. Each backend
+loads one model at a time. The menu's mode option handles enabling it, or use:
 
 ```bash
+localvllm mode swap
+localvllm --backend omni mode swap
+```
+
+The first enable downloads a pinned official llama-swap binary and verifies
+its SHA256 checksum. Direct installs do not download it. If a server is running,
+changing mode stops the old service and starts the new one on the same port;
+a failed change restores the previous mode. Models, tuning and API keys remain
+available in both modes. If the server was stopped, start it from the menu.
+
+Return to direct mode:
+
+```bash
+localvllm mode direct
+localvllm --backend omni mode direct
+```
+
+Use `localvllm mode` to see the selected backend's mode. Each backend has its own
+mode, port and service. If both use the same GPU, budget memory across both;
+independent backends do not coordinate GPU reservations.
+
+### Web interface
+
+In automatic mode, open llama-swap's model dashboard:
+
+```bash
+localvllm ui --open
+localvllm --backend omni ui --open
+```
+
+The menu's **w** action opens the same page. On a headless server, `localvllm ui`
+prints the URL. You can explicitly request it with `localvllm ui --dashboard`.
+The dashboard provides model load/unload, status and logs. In direct mode,
+`localvllm ui --open` opens the engine's API documentation instead.
+
+Automatic mode currently binds to loopback. Default dashboard addresses are
+`http://127.0.0.1:8000/ui` for vLLM and `http://127.0.0.1:8091/ui` for Omni.
+Use an SSH tunnel from another computer; for example,
+`ssh -L 8000:127.0.0.1:8000 user@server`, then open the local URL. Upstream
+model APIs that are not supported by the proxy remain available in direct mode.
+
+## Add models
+
+The simplest way is the menu. For direct commands, download without changing
+the running model, then select it:
+
+```bash
+localvllm pull org/model-name
 localvllm use org/model-name
 localvllm start
 ```
@@ -94,11 +148,18 @@ Use one complete folder per model:
 ~/ai-vllm/models/omni/my-omni-model/
 ```
 
-Keep the original `config.json`, tokenizer files, and all weight shards together.
+Keep the original `config.json` (or `model_index.json` for diffusion pipelines),
+tokenizer files, all weight shards, and every required model component together.
 A lone `.safetensors` file is not a complete model. The model must also be
 supported by the selected engine. For GGUF, use [Local AI Server](https://github.com/hossbit/local-ai-server).
 
-After copying or linking your folder:
+You can add a folder from any disk without copying it:
+
+```bash
+localvllm add /mnt/models/my-text-model
+```
+
+After registering, copying or linking your folder:
 
 ```bash
 localvllm models --paths
@@ -138,7 +199,10 @@ prints the configured locations.
 ## Commands
 
 ```bash
-localvllm setup                 # Guided setup
+localvllm                       # Guided model management
+localvllm pull ORG/MODEL        # Download/register without selecting it
+localvllm add /path/to/model    # Register an existing complete folder
+localvllm mode                 # Show the serving mode
 localvllm status                # Server status
 localvllm models                # Available models
 localvllm ui                    # API documentation and URL
