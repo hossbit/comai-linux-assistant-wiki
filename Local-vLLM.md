@@ -119,13 +119,16 @@ mode** is only the model to use when returning to direct mode. If the router
 cannot be queried, the state is `unavailable`; it never substitutes that saved
 selection. A stopped service has no loaded models.
 
-In direct mode, **SELECTED** marks the manually chosen model; check `localvllm
-status` to see whether its service is running.
+In direct mode, **SELECTED** marks the manually chosen model. `version` and
+`status --json` distinguish this saved choice from models reported by the running
+API. A stopped service has no active models. An unreachable API reports its
+runtime state as unavailable. The menu shows live model states in automatic mode.
 
 For scripts, `localvllm models --json` includes `mode`, each model's `state`,
 `direct_model`, `active_models`, and `runtime_state_available`. In automatic mode,
 `active_model` is populated only when exactly one model is loaded; use
-`active_models` for the full list.
+`active_models` for the full list. Direct mode also uses API-reported models for
+these fields; `direct_model` always preserves your saved selection.
 
 ### Web interface
 
@@ -146,6 +149,20 @@ Automatic mode currently binds to loopback. Default dashboard addresses are
 Use an SSH tunnel from another computer; for example,
 `ssh -L 8000:127.0.0.1:8000 user@server`, then open the local URL. Upstream
 model APIs that are not supported by the proxy remain available in direct mode.
+
+## Example models and downloads
+
+Choose **e** in the menu for a short list of examples and links. Weight storage
+estimates exclude runtime memory and KV caches. Larger context and concurrent
+requests need additional memory. Omni models may require several stages and the
+[matching upstream deployment recipe](https://docs.vllm.ai/projects/vllm-omni/en/latest/models/supported_models/).
+Examples are starting points; custom Hugging Face IDs remain supported.
+
+Before downloading, Local vLLM shows the cache location and available filesystem
+space. For gated models, accept the model's access conditions on Hugging Face
+and provide an account read token using `HF_TOKEN` or `LOCALVLLM_HF_TOKEN` in your
+environment. Downloads reuse cached files; rerun the same command after a failed
+connection to resume. Never put a token in an issue or log you share.
 
 ## Add models
 
