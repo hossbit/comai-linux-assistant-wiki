@@ -15,6 +15,7 @@ provider supplies the model. LocalAI is optional.
 | Understand a failure | [Health and diagnostics](Health-and-Diagnostics.md) |
 | Update or return to a previous version | [Updates and rollback](Updates-and-Rollback.md) |
 | Use the optional LocalAI helper | [ComAI and LocalAI](ComAI-and-LocalAI.md) |
+| Set up the vLLM / vLLM-Omni server | [Local vLLM guide](Local-vLLM.md) |
 | Remove the application | [Uninstall](Uninstall.md) |
 
 ## First session

@@ -17,6 +17,7 @@
 ## Optional LocalAI
 - [How the projects fit together](ComAI-and-LocalAI.md)
 - [Local AI service](Local-AI-Service.md)
+- [Local vLLM guide](Local-vLLM.md)
 - [LocalAI troubleshooting](Troubleshooting-LocalAI.md)
 
 ## Reference
