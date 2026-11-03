@@ -217,14 +217,17 @@ localvllm update                # Update installed backends
 
 ```bash
 localvllm version
-localvllm update
+localvllm update             # Active backend, llama-swap and helpers
+localvllm update --all       # Every installed backend
 ```
 
 `version` shows the manager, vLLM, Omni, Python, serving mode and installed
 llama-swap version/path. The menu's **u** action updates all installed components.
 
-A normal update checks the manager, installed engine environments, and an
-installed project-managed llama-swap binary. It does not install llama-swap
+A normal update checks the active backend, shared manager/helpers, and an
+installed project-managed llama-swap binary. The active backend is selected by
+`--backend`, or the configured default when omitted. Use `localvllm update --all`
+to update every installed backend. It does not install llama-swap
 on direct-only installations. Router downloads are verified and staged before
 replacement; failures restore the previous files and serving configuration.
 A shared router update restarts affected running routers, including Omni.

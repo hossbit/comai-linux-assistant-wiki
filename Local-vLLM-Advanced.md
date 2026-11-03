@@ -703,7 +703,8 @@ counts.
 ## Update
 
 ```bash
-localvllm update                  # all installed backends + scripts
+localvllm update                  # active backend, llama-swap and helpers
+localvllm update --all            # every installed backend
 localvllm update --backend omni
 localvllm update --scripts-only
 localvllm update --vllm-only
