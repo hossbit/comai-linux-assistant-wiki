@@ -88,7 +88,7 @@ localvllm mode swap
 localvllm --backend omni mode swap
 ```
 
-The first enable downloads a pinned official llama-swap binary and verifies
+The first enable downloads an official llama-swap release and verifies
 its SHA256 checksum. Direct installs do not download it. If a server is running,
 changing mode stops the old service and starts the new one on the same port;
 a failed change restores the previous mode. Models, tuning and API keys remain
@@ -212,6 +212,29 @@ localvllm update                # Update installed backends
 ```
 
 [Full command reference](Local-vLLM-Advanced.md#commands).
+
+## Versions and updates
+
+```bash
+localvllm version
+localvllm update
+```
+
+`version` shows the manager, vLLM, Omni, Python, serving mode and installed
+llama-swap version/path. The menu's **u** action updates all installed components.
+
+A normal update checks the manager, installed engine environments, and an
+installed project-managed llama-swap binary. It does not install llama-swap
+on direct-only installations. Router downloads are verified and staged before
+replacement; failures restore the previous files and serving configuration.
+A shared router update restarts affected running routers, including Omni.
+An external llama-swap selected by `LOCALVLLM_LLAMA_SWAP_BIN` or PATH is reported
+but left for its owner/package manager to update.
+
+`localvllm update --scripts-only` refreshes manager files without changing engine
+or router versions. `--vllm-only` updates engine packages only. `--no-start`
+leaves affected services stopped, including after a failed update. Models are
+kept; updates do not download new model-weight revisions automatically.
 
 ## Configuration
 

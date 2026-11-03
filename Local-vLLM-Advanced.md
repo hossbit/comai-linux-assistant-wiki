@@ -351,8 +351,9 @@ models while leaving the proxy ready. `localvllm stop` stops the full backend.
 `localvllm ui --dashboard --open` opens its dashboard. In direct mode, existing
 load/unload and API-documentation behavior is preserved.
 
-llama-swap is installed on first enable from its pinned official release with
-SHA256 verification. `LOCALVLLM_LLAMA_SWAP_BIN` can select an existing executable.
+llama-swap is installed on first enable from an official release with SHA256
+verification. `LOCALVLLM_LLAMA_SWAP_VERSION=latest` is the default; set a tag
+such as `v269` to pin it. `LOCALVLLM_LLAMA_SWAP_BIN` can select an existing executable.
 Generated router state lives under `conf/backends/BACKEND/router/`; do not edit
 those generated files. Mode state is in `conf/backends/BACKEND/serving-mode`.
 Use model override files for tuning. Adding models or changing their settings
@@ -715,6 +716,19 @@ line:
 ```bash
 VLLM_VERSION=0.32.0 VLLM_OMNI_VERSION=0.32.0 localvllm backend install omni
 ```
+
+Normal updates also check an installed managed llama-swap. Its download is
+staged, checked against the official SHA256 checksum, and executed to verify
+the expected version before promotion. Replacement is atomic and participates
+in the manager/environment rollback transaction. External executables are never
+overwritten. Missing optional routers are not installed by update.
+
+Shared manager changes include all installed backends in the service rollback
+scope. Shared router changes restart routed backends while leaving unrelated
+direct services running when their manager and packages did not change. Backend
+selection still controls which Python environments are upgraded. Launcher
+regeneration failure is fatal even for a stopped backend, so a broken generated
+configuration cannot silently commit. `--no-start` is respected during rollback.
 
 Updates are staged into a copy of the backend virtualenv, verified with
 `pip check` and an import test, then swapped in. If the new environment or the
