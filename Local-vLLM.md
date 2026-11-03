@@ -7,7 +7,7 @@ short installation guide, visit the [project README](https://github.com/hossbit/
 ## Find what you need
 
 - [Backends](#two-isolated-backends) and [requirements](#requirements)
-- [Installation](#install) and [model setup](#add-models)
+- [Installation](#install), [AMD and CPU setup](#amd-and-cpu-installation), and [model setup](#add-models)
 - [Commands](#commands) and [configuration](#configuration)
 - [API usage](#use-the-server), [API keys](#api-keys), and [security](#security)
 - [Updates](#update), [uninstall](#uninstall), and [troubleshooting](#troubleshooting)
@@ -63,8 +63,8 @@ unless changed with `localvllm backend default omni`).
 - Python 3.10 or newer with the `venv` module
 - An NVIDIA GPU with a working driver for normal GPU serving
 - ROCm is possible with a matching vLLM wheel; CPU is experimental
-- For ROCm/CPU, set the vendor wheel index in `VLLM_PIP_ARGS` (and
-  `VLLM_OMNI_PIP_ARGS` for Omni) before installing
+- ROCm/CPU may require hardware-specific packages and pip options; see
+  [AMD and CPU installation](#amd-and-cpu-installation)
 - `sudo` access during installation for system packages
 - Enough disk for two virtualenvs and the model weights
 - Enough VRAM for the model(s) you select
@@ -101,7 +101,7 @@ Custom directory:
 One-line install from GitHub:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hossbit/local-ai-server-vllm/main/install.sh | bash -s -- --all
+curl -fsSL https://hossbit.github.io/localvllm/install.sh | bash -s -- --all
 ```
 
 The default install directory is `~/ai-vllm`.
@@ -116,6 +116,74 @@ localvllm doctor all
 If the command is not found in the current terminal, run
 `source ~/.bashrc` (or open a new terminal); the installer adds
 `~/.local/bin` to PATH when needed.
+
+### AMD and CPU installation
+
+These paths are advanced and depend on upstream vLLM wheels, hardware, Python,
+and operating-system compatibility. The installer creates a virtual environment
+and runs pip; it does **not** install GPU drivers, choose a compatible ROCm
+wheel, or perform the upstream CPU source-build procedure. Check the relevant
+upstream instructions before installing. Use the plain `vllm` backend first.
+
+#### AMD GPU (ROCm)
+
+1. Check that your GPU and ROCm stack are supported by the [vLLM GPU installation guide](https://docs.vllm.ai/en/stable/getting_started/installation/gpu/)
+   (select AMD ROCm). Install a compatible driver/runtime as required by that
+   guide. `rocminfo` or `rocm-smi` can help verify your setup.
+2. Check the wheel's Python and system requirements. Choose an appropriate
+   Python interpreter and wheel index from the upstream guide. For example,
+   current upstream ROCm wheels require Python 3.12; availability and the
+   appropriate index depend on the vLLM and ROCm release.
+3. Pin a matching wheel version and its index. This example uses upstream's
+   vLLM 0.18.0 / ROCm 7.0 wheel; use it only if it matches your system:
+
+   ```bash
+   curl -fsSL https://hossbit.github.io/localvllm/install.sh | \
+     LOCALVLLM_PYTHON=python3.12 VLLM_TARGET_DEVICE=rocm \
+     VLLM_VERSION="0.18.0+rocm700" \
+     VLLM_PIP_ARGS="--extra-index-url https://wheels.vllm.ai/rocm/0.18.0/rocm700" \
+     bash -s -- --backend vllm
+   ```
+
+   Choose a different `VLLM_VERSION` and index together if needed. This is an
+   example, not a compatibility guarantee: confirm the wheel supports your GPU
+   and installed stack. An extra index without an exact version does not
+   guarantee pip will select a ROCm build. If Python or a compatible wheel is unavailable,
+   pip may install a CUDA build or fail; do not assume GPU support succeeded.
+   Inspect `~/ai-vllm/logs/pip-install-vllm.log` and run `localvllm doctor vllm`.
+
+To try Omni, check the [vLLM-Omni installation guide](https://docs.vllm.ai/projects/vllm-omni/en/latest/getting_started/installation/)
+for the matching vLLM, Omni, ROCm, and Python versions. For a compatible stack,
+set the appropriate `VLLM_PIP_ARGS` and, if needed, `VLLM_OMNI_PIP_ARGS` before
+running the installer with `--backend omni`. This project installs both
+packages in one pip transaction; the indices and versions must work together.
+
+#### CPU only
+
+CPU inference is experimental in this manager and can be slow. `VLLM_ALLOW_CPU=1`
+only bypasses the manager's no-GPU check; `VLLM_TARGET_DEVICE=cpu` selects the
+CPU target. Neither setting guarantees that pip installs a CPU-compatible
+vLLM build. Follow the [vLLM CPU installation guide](https://docs.vllm.ai/en/latest/getting_started/installation/cpu/)
+for your architecture to determine whether compatible packages are available
+or a source build is required.
+
+If you have identified suitable pip options for your system, set them before
+installing (replace the placeholder with those actual options):
+
+```bash
+export VLLM_ALLOW_CPU=1 VLLM_TARGET_DEVICE=cpu
+export VLLM_PIP_ARGS="<CPU-compatible pip options from the vLLM guide>"
+curl -fsSL https://hossbit.github.io/localvllm/install.sh | bash -s -- --backend vllm
+```
+
+The placeholder is not a usable index; do not run it unchanged. If upstream
+requires a source build or a direct wheel that this installer's `pip install
+vllm` flow cannot select, use the upstream installation workflow instead; this
+manager does not automate that build. vLLM-Omni on CPU is not a supported
+production target here. For a simpler CPU/GGUF option, see [Local AI Server](https://github.com/hossbit/local-ai-server).
+
+After a successful install, start a model that fits your system's memory and
+check `localvllm doctor vllm`; inspect the pip log if installation fails.
 
 ## Add models
 
