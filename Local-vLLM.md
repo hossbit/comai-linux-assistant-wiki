@@ -85,6 +85,56 @@ localvllm start
 For Omni, use `localvllm --backend omni` with `use`, or choose Omni in setup.
 See [model setup and GGUF notes](Local-vLLM-Advanced.md#add-models).
 
+### Where to put your own models
+
+Use one complete folder per model:
+
+```text
+~/ai-vllm/models/vllm/my-text-model/
+~/ai-vllm/models/omni/my-omni-model/
+```
+
+Keep the original `config.json`, tokenizer files, and all weight shards together.
+A lone `.safetensors` file is not a complete model. The model must also be
+supported by the selected engine. For GGUF, use [Local AI Server](https://github.com/hossbit/local-ai-server).
+
+After copying or linking your folder:
+
+```bash
+localvllm models --paths
+localvllm use my-text-model
+localvllm start vllm
+```
+
+For Omni, select it explicitly:
+
+```bash
+localvllm --backend omni use my-omni-model
+localvllm start omni
+```
+
+You can keep large model collections on another disk without copying them:
+
+```bash
+localvllm use /mnt/models/my-text-model
+```
+
+Selecting a different model restarts the backend if it is already running.
+For a shared library link instead, use `ln -s /mnt/models/my-text-model ~/ai-vllm/models/vllm/my-text-model`.
+
+### Downloaded models and cache
+
+A Hugging Face ID downloads weights on first start. The shared cache is
+`~/ai-vllm/hf-cache/`; successful starts add readable model links under the
+selected backend's `models/` folder. Links reuse the same weights, saving disk
+space. `localvllm models --paths` shows the library path and cache target.
+Your manually added folders are never replaced by these links.
+
+Keep cache files while a model link uses them. Moving a linked model to
+another machine requires its actual files, not just the link. Custom
+`LOCALVLLM_DIR` and `LOCALVLLM_HF_HOME` settings change these paths; the CLI
+prints the configured locations.
+
 ## Commands
 
 ```bash

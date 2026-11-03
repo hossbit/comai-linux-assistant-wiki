@@ -479,6 +479,50 @@ backends, assign separate GPUs or budget shared GPU memory explicitly.
 Multi-GPU launcher generation is covered by local regression tests. Actual
 multi-GPU performance has not been validated on this project's test laptop.
 
+### Native engine tuning and Omni deployment files
+
+Set `ENGINE_DEFAULTS=1` in a model override to let vLLM or an Omni deployment
+file own resource tuning. The manager then omits its tensor-parallel, memory,
+context, dtype, quantization, batching, offload, eager-mode and runner flags.
+Network binding, model identity, authentication, explicit model options and
+`EXTRA_ARGS` still apply. Do not combine short tuning settings with this mode;
+put desired native flags in `EXTRA_ARGS` or the upstream deployment file.
+
+For an Omni recipe compatible with your installed version:
+
+```bash
+ENGINE_DEFAULTS=1
+EXTRA_ARGS=(--deploy-config /srv/models/deploy.yaml --strategy-config /srv/models/strategy.yaml)
+```
+
+See [Omni deployment configuration](https://docs.vllm.ai/projects/vllm-omni/en/latest/configuration/stage_configs/)
+and [parallel strategies](https://docs.vllm.ai/projects/vllm-omni/en/latest/configuration/composable_parallel/).
+CLI values can override YAML sizing, so this mode avoids the manager's TP=1
+or context defaults overriding a stage recipe. Supported flags depend on the
+installed engine version.
+
+### Server hardware and deployment scope
+
+| Hardware or deployment | Setup |
+| --- | --- |
+| NVIDIA workstation/server GPUs | Use a supported CUDA wheel and driver; single-host multi-GPU options pass through to vLLM. |
+| Grace-Hopper / Grace-Blackwell ARM64 | Use matching ARM64 wheels or an upstream build/container; x86 wheels cannot be reused. |
+| AMD Instinct / ROCm | Select matching ROCm vLLM, PyTorch and Omni builds; the default CUDA wheel is unsuitable. |
+| Intel XPU, NPU and other upstream plugins | Require their platform-specific environment and installation recipe; automatic setup and diagnostics here are not validated for these platforms. |
+| Multi-node / Kubernetes | Use upstream orchestration; this manager does not provision clusters or networking. |
+
+For Hopper/Blackwell, upstream recommends precompiled FlashInfer kernels in
+the same environment, refreshed after engine upgrades. When supported by the
+installed release, run its `vllm download-kernels` command. Blackwell requires
+CUDA 12.8 or newer. Wheel, driver, architecture and model support must all
+match; see the [vLLM hardware installation guide](https://docs.vllm.ai/en/latest/getting_started/installation/gpu/)
+and [Omni installation guide](https://docs.vllm.ai/projects/vllm-omni/en/latest/getting_started/installation/gpu/).
+
+GPU suggestions respect the configured NVIDIA device subset, including a
+model's `CUDA_VISIBLE_DEVICES`. MIG partition memory is reported as unavailable
+rather than incorrectly using an entire physical GPU's capacity. Suggestions
+are starting points, not topology-aware placement or capacity guarantees.
+
 ### Sleep mode (fast unload/wake)
 
 vLLM can release GPU memory while keeping the process alive:
