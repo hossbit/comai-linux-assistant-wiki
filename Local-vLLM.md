@@ -105,6 +105,28 @@ Use `localvllm mode` to see the selected backend's mode. Each backend has its ow
 mode, port and service. If both use the same GPU, budget memory across both;
 independent backends do not coordinate GPU reservations.
 
+### Which model is loaded?
+
+```bash
+localvllm models
+localvllm --backend omni models
+```
+
+In automatic mode, the **STATE** column reports the selected backend's live
+router state: `loaded`, `loading`, `unloading`, or `unloaded`. Requests can switch
+models, so run the command again to refresh. The saved **Selection for direct
+mode** is only the model to use when returning to direct mode. If the router
+cannot be queried, the state is `unavailable`; it never substitutes that saved
+selection. A stopped service has no loaded models.
+
+In direct mode, **SELECTED** marks the manually chosen model; check `localvllm
+status` to see whether its service is running.
+
+For scripts, `localvllm models --json` includes `mode`, each model's `state`,
+`direct_model`, `active_models`, and `runtime_state_available`. In automatic mode,
+`active_model` is populated only when exactly one model is loaded; use
+`active_models` for the full list.
+
 ### Web interface
 
 In automatic mode, open llama-swap's model dashboard:
