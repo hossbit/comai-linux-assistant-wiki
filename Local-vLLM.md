@@ -35,6 +35,9 @@ Open a new terminal, then follow the prompts:
 localvllm
 ```
 
+Running `localvllm` shows the command reference. Run `localvllm menu` to open
+the optional interactive interface.
+
 The menu lists your models and lets you download a model, add a folder, start
 or stop serving, and open the web interface. Choose **b** to manage vLLM or
 Omni; both have the same workflow and separate model lists. If an engine is
