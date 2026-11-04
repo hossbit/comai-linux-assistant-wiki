@@ -98,6 +98,68 @@ Installer regression checks simulate ARM64 and Red Hat paths; this does not
 constitute real inference testing on those machines. Real AMD, ARM64, Red Hat
 and multi-GPU inference still require access to matching hardware.
 
+## Help and troubleshooting
+
+Run `localvllm` or `localvllm help` for the command reference. Focused guides:
+`localvllm help models`, `modes`, `keys`, `logs`, `metrics`, or `troubleshoot`.
+The optional interactive menu remains available through `localvllm menu`.
+
+### One log directory
+
+All manager log files live in `<install directory>/logs`, normally `~/ai-vllm/logs`.
+
+| File | What it contains |
+| --- | --- |
+| `vllm.log`, `omni.log` | Runtime output; in automatic mode this includes router, HTTP access and model worker output |
+| `install.log`, `update.log` | Installer/updater console output after the installation path is known |
+| `install-packages-vllm.log`, `install-packages-omni.log` | Package installation details |
+| `update-packages-vllm.log`, `update-packages-omni.log` | Package upgrade details |
+| `manager-events.log` | Mutating command names, backend and exit code; no command arguments or key secrets |
+| `service-vllm.log`, `service-omni.log` | Journal output saved when using `logs --service` |
+
+```bash
+localvllm logs                       # Follow active backend; Ctrl+C exits
+localvllm logs omni                  # Follow Omni
+localvllm logs --list                # Discover filenames and categories
+localvllm logs --path                # Show the directory
+localvllm logs all --no-follow -n 80  # Recent output from every current log file
+localvllm logs --file update.log --no-follow
+localvllm logs --service --no-follow # Save/display recent systemd startup messages
+```
+
+Live file following survives log replacement on restart. Earlier sessions use
+timestamped filenames; `LOCALVLLM_LOG_KEEP` defaults to five archived sessions per
+file. Runtime logs rotate on service start; operation logs rotate on their next
+invocation, journal copies when requested, and the event log rotates on a later
+write after exceeding 2 MiB. These are session-based policies, not continuous
+size limits for a long-running process. Existing `pip-install-*.log` files remain
+available as legacy logs. `logs all` follows files that exist when it starts;
+run it again to include newly created files. Raw systemd journals still reside
+in the system journal; `--service` brings a copy into the common directory.
+Logs are local; review upstream messages for private paths/URLs before sharing.
+
+### Useful metrics
+
+```bash
+localvllm metrics
+localvllm metrics --watch
+localvllm --backend omni metrics
+localvllm metrics --raw
+```
+
+The readable view shows running/waiting requests, peak KV cache usage across
+reported engines, cumulative token/request counters, and cumulative mean
+time to first token. Watch mode samples generation counter changes every two
+seconds. Counter resets produce `n/a`, not a negative speed. Missing metrics
+also show `n/a`. Hardware GPU memory is for visible devices, not per-model usage.
+
+In automatic mode, only ready workers are queried directly over loopback;
+monitoring never sends an inference request or wakes an unloaded model.
+`--raw` returns the native backend endpoint, which is the router's own metrics
+in automatic mode. Omni image/audio/video stage metrics vary by model/version;
+text-token fields may be unavailable. See the
+[upstream metric definitions](https://github.com/vllm-project/vllm/blob/main/docs/design/metrics.md).
+
 ## Serving modes
 
 **Direct is the default.** Your client connects straight to vLLM or Omni,

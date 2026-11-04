@@ -667,6 +667,14 @@ backends can coexist on one GPU.
 
 ## API keys
 
+The same key commands work in direct/manual and llama-swap modes for both
+vLLM and Omni. Direct mode configures the native engine; automatic mode
+configures the router, with workers bound to loopback. Changes regenerate the
+selected backend configuration and may restart its running service. If activation
+fails, the command returns an error and restores the previous key registry.
+Switching serving modes preserves that backend's keys.
+
+
 Each backend has its own key registry under
 `conf/backends/<backend>/api-keys.tsv` (mode `0600`). vLLM supports one active
 API key per server, so `create` refuses to add a second active key:
