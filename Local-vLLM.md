@@ -42,7 +42,7 @@ The menu lists your models and lets you download a model, add a folder, start
 or stop serving, and open the web interface. Choose **b** to manage vLLM or
 Omni; both have the same workflow and separate model lists. If an engine is
 missing, the menu offers to install it. Choose a compatible model that fits
-your hardware. `localvllm menu` and `localvllm setup` open the same menu.
+your hardware. Use `localvllm menu` for management; `localvllm setup` is the separate first-configuration guide.
 
 The default installation directory is `~/ai-vllm`. If `localvllm` is not found,
 open a new terminal or add `~/.local/bin` to your `PATH`.
@@ -97,6 +97,64 @@ The manager currently manages native virtual environments, not containers.
 Installer regression checks simulate ARM64 and Red Hat paths; this does not
 constitute real inference testing on those machines. Real AMD, ARM64, Red Hat
 and multi-GPU inference still require access to matching hardware.
+
+## Choose your workflow
+
+Engine and serving method are independent: choose vLLM or Omni first, then
+direct/manual or automatic switching. The configured default is the backend used
+when `--backend` is omitted, not a claim that its service is running.
+
+### Guided configuration
+
+Run `localvllm setup` in a terminal. It asks for an engine, serving method and
+model source (download, own folder, or registered model). It previews the plan
+before applying it; the final successful step saves the selected backend as
+your default. Engine installation has a separate prompt when needed. Setup leaves
+services stopped and prints the exact start command. It refuses to configure a
+running backend; stop it yourself before rerunning setup. A failed step reports
+an error; earlier successful downloads/registrations can be reused on retry.
+Cancelling before confirmation applies no configuration commands.
+
+### Independent commands
+
+Every command works without setup. Examples below use the vLLM backend; replace
+`--backend vllm` with `--backend omni` for Omni. Install Omni first with
+`localvllm backend install omni`, and apply its model-specific recipe as needed.
+
+Direct/manual:
+
+```bash
+localvllm --backend vllm pull ORG/MODEL
+localvllm --backend vllm use ORG/MODEL
+localvllm --backend vllm mode direct
+localvllm --backend vllm start
+localvllm --backend vllm status
+```
+
+Automatic switching:
+
+```bash
+localvllm --backend vllm pull ORG/MODEL
+localvllm --backend vllm mode swap
+localvllm --backend vllm start
+localvllm --backend vllm status
+```
+
+For your own model folder, replace `pull ORG/MODEL` with `add /path/to/model` and
+select its registered folder name using `use MODEL` in direct mode. Adding a
+model to a running router does not interrupt it; `reload` applies changes when
+ready and may restart the service. To persist a default, run
+`localvllm backend default vllm` or `localvllm backend default omni`.
+
+`localvllm help paths` summarizes these choices. If a step fails, read the
+problem and next command in the output; installation, model selection, service
+startup and UI readiness are checked separately. `ui` remains passive: direct
+opens API documentation, swap opens the dashboard, and a stopped service gets
+an explicit start instruction.
+
+Design references: [CLI guidelines](https://clig.dev/#errors),
+[vLLM quickstart](https://docs.vllm.ai/en/latest/getting_started/quickstart/), and
+[Omni quickstart](https://docs.vllm.ai/projects/vllm-omni/en/latest/getting_started/quickstart/).
 
 ## Help and troubleshooting
 
