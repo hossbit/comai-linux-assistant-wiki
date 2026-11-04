@@ -115,6 +115,7 @@ All manager log files live in `<install directory>/logs`, normally `~/ai-vllm/lo
 | `install-packages-vllm.log`, `install-packages-omni.log` | Package installation details |
 | `update-packages-vllm.log`, `update-packages-omni.log` | Package upgrade details |
 | `manager-events.log` | Mutating command names, backend and exit code; no command arguments or key secrets |
+| `browser.log` | Desktop browser-launcher diagnostics |
 | `service-vllm.log`, `service-omni.log` | Journal output saved when using `logs --service` |
 
 ```bash
@@ -217,6 +218,15 @@ For scripts, `localvllm models --json` includes `mode`, each model's `state`,
 these fields; `direct_model` always preserves your saved selection.
 
 ### Web interface
+
+The selected backend must already be running. `ui --open` never starts a service,
+loads a model, or changes mode. If stopped, it prints the backend-specific start
+command. In direct mode, choose your model with `use MODEL` before starting.
+A running service whose API is still loading or unreachable gets a separate
+status/logs diagnostic. Browser launcher errors are recorded in `logs/browser.log`.
+Direct mode opens API documentation, not a chat or model-management interface;
+automatic mode opens llama-swap's dashboard.
+
 
 In automatic mode, open llama-swap's model dashboard:
 
