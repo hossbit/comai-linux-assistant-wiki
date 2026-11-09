@@ -278,7 +278,7 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 | `localvllm pull ORG/MODEL [--revision REF]` | Download/register a model without selecting a different active model. |
 | `localvllm add /path/to/model` | Register a complete existing folder without moving or copying it. |
 | `localvllm mode [direct\|swap]` | Show/change the selected backend's serving mode. |
-| `localvllm start [BACKEND\|all]` | Start one or both services. |
+| `localvllm start [BACKEND\|all]` | Start one or both services; returns once the API answers (see `LOCALVLLM_READY_WAIT`). |
 | `localvllm stop [BACKEND\|all]` | Stop services and release GPU memory. |
 | `localvllm restart [BACKEND\|all]` | Restart services. |
 | `localvllm reload [BACKEND\|all]` | Rescan models; restart only if a launcher changed. |
@@ -297,7 +297,8 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 | `localvllm backend list` | Show both backends, versions, ports, services, models. |
 | `localvllm backend install NAME` | Install/repair one backend. |
 | `localvllm backend default NAME` | Change the default backend. |
-| `localvllm doctor [--json] [BACKEND\|all]` | Diagnose Python, vLLM, GPU, model, port, keys, pip consistency. |
+| `localvllm doctor [--json] [BACKEND\|all]` | Diagnose Python, vLLM, GPU, model, port, keys, pip consistency. An uninstalled backend is a warning under `all`. |
+| `localvllm config check [BACKEND\|all]` | Validate the configuration by generating the launcher in a temporary directory; the installed launcher is not changed. `all` skips backends that are not installed or have no models. |
 | `localvllm update [--backend NAME] [--all]` | Update the active backend, managed llama-swap and helpers; `--all` updates every installed backend. |
 | `localvllm version [BACKEND\|all]` | Show manager, engine, Python and optional llama-swap versions, paths and serving modes. |
 | `localvllm uninstall` | Remove both backends; models are kept by default. |
@@ -382,6 +383,26 @@ LOCALVLLM_VLLM_PORT=8000
 LOCALVLLM_OMNI_PORT=8091
 LOCALVLLM_LISTEN_HOST=127.0.0.1
 ```
+
+Validate after editing, without touching the running service:
+
+```bash
+localvllm config check all
+```
+
+Engine defaults use the `VLLM_` prefix (for example `VLLM_MAX_MODEL_LEN`).
+Unprefixed shell variables such as `DTYPE` or `TASK` do not affect the
+launcher; set those in a per-model override instead. An explicitly empty value
+clears a default: `VLLM_MAX_MODEL_LEN=` lets vLLM choose the context length.
+
+### Service behavior
+
+Under systemd each backend runs as a `Type=simple` unit with
+`Restart=on-failure`. `localvllm start` and `restart` wait until `/health` or
+`/v1/models` answers, up to `LOCALVLLM_HEALTH_CHECK_TIMEOUT` seconds (default
+900). Set `LOCALVLLM_READY_WAIT=0` to return as soon as systemd has started the
+unit. Updates use the same wait, so a model that fails to load is reported
+before the update is considered complete.
 
 ### Backend profiles
 
@@ -838,6 +859,20 @@ vLLM-Omni releases are aligned with vLLM minor versions. Check the
 [vLLM-Omni installation guide](https://docs.vllm.ai/projects/vllm-omni/en/latest/getting_started/installation/)
 and pin both versions when needed. The pip log is at
 `~/ai-vllm/logs/pip-install-omni.log`.
+
+### Service started but the API is not ready
+
+`localvllm start` prints this when the unit is running but the API does not
+answer within `LOCALVLLM_HEALTH_CHECK_TIMEOUT`, or when the unit stops first.
+Check the journal and the engine log:
+
+```bash
+journalctl --user -u localvllm.service -n 50 --no-pager
+localvllm logs --no-follow
+```
+
+Large models can take several minutes to load on the first start; raise the
+timeout only if the log shows the engine is still loading.
 
 ### `use` succeeds but the launcher will not generate
 
