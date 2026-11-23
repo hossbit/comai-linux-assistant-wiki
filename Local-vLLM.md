@@ -470,6 +470,13 @@ and disk space. If it still fails, inspect `~/ai-vllm/logs/pip-install-omni.log`
 and run `localvllm doctor all`. Other causes include unsupported wheels,
 missing GPU drivers, network errors, or insufficient disk space.
 
+### The model does not start on a small GPU
+
+`localvllm start` prints the cause and the exact lines to add, for example
+`MAX_MODEL_LEN=3072` and `MAX_NUM_SEQS=64`. Add them to the model's override
+file and start again. `localvllm suggest` shows settings sized to your GPU. See
+[out of memory during startup](Local-vLLM-Advanced.md#out-of-memory-during-startup).
+
 For other issues, see the [troubleshooting reference](Local-vLLM-Advanced.md#troubleshooting).
 
 ## Security

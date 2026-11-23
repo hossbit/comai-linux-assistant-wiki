@@ -363,7 +363,9 @@ such as `v269` to pin it. `LOCALVLLM_LLAMA_SWAP_BIN` can select an existing exec
 Generated router state lives under `conf/backends/BACKEND/router/`; do not edit
 those generated files. Mode state is in `conf/backends/BACKEND/serving-mode`.
 Use model override files for tuning. Adding models or changing their settings
-refreshes the router configuration and may restart its workers.
+refreshes the router configuration and may restart its workers. Generated
+files that the running and the new configuration no longer use are removed
+automatically.
 
 Omni worker generation preserves `--omni`, stage/deployment arguments and native
 engine tuning mode. Common chat, embedding, image and audio proxy paths are
@@ -394,6 +396,24 @@ Engine defaults use the `VLLM_` prefix (for example `VLLM_MAX_MODEL_LEN`).
 Unprefixed shell variables such as `DTYPE` or `TASK` do not affect the
 launcher; set those in a per-model override instead. An explicitly empty value
 clears a default: `VLLM_MAX_MODEL_LEN=` lets vLLM choose the context length.
+
+### GPU memory
+
+`VLLM_GPU_MEMORY_UTILIZATION` is empty by default (Local vLLM 1.4.0 and newer),
+so vLLM decides. vLLM 0.34 and newer size the KV cache from the memory that is
+actually free after warmup; older releases use their own default of 0.90.
+Setting a value turns the vLLM 0.34 behavior off and usually gives a smaller
+KV cache. Set one only when the GPU is shared, for example when both backends
+run on the same GPU:
+
+```bash
+VLLM_GPU_MEMORY_UTILIZATION=0.45   # in conf/localvllm.conf, or
+GPU_MEMORY_UTILIZATION=0.45        # in one model's override
+```
+
+The Omni backend keeps 0.90 in `conf/backends.d/omni.conf`, because its
+multi-stage pipelines size memory per stage. Values you set yourself are kept
+on update.
 
 ### Service behavior
 
@@ -441,7 +461,6 @@ Example for a large text model:
 
 ```bash
 TENSOR_PARALLEL_SIZE=2
-GPU_MEMORY_UTILIZATION=0.92
 MAX_MODEL_LEN=32768
 MAX_NUM_SEQS=128
 DTYPE=bfloat16
@@ -502,7 +521,6 @@ TENSOR_PARALLEL_SIZE=4
 CUDA_VISIBLE_DEVICES=0,1,2,3
 MAX_MODEL_LEN=32768
 MAX_NUM_SEQS=256
-GPU_MEMORY_UTILIZATION=0.90
 ```
 
 Choose a tensor-parallel size supported by the model and GPU topology. These
@@ -809,13 +827,30 @@ venv/vllm/bin/python -c 'import torch; print(torch.cuda.is_available())'
 
 ### Out of memory during startup
 
-Lower one or more of:
+When the model's context does not fit, `localvllm start` prints the cause and
+the lines to add to the model's override file, using vLLM's own estimate. For
+example, the default 8192-token context does not fit a small model on a 4 GB
+GPU:
+
+```text
+Cause: the model's context does not fit in the GPU memory left for the KV cache.
+Fix: add these lines to ~/ai-vllm/conf/backends/vllm/models.d/Qwen__Qwen3-0.6B.conf
+  MAX_MODEL_LEN=3072
+  MAX_NUM_SEQS=64
+then run: localvllm --backend vllm start
+```
+
+`localvllm suggest` gives settings sized to your GPU. In general, lower one or
+more of:
 
 ```bash
-GPU_MEMORY_UTILIZATION=0.85
 MAX_MODEL_LEN=4096
 MAX_NUM_SEQS=64
+KV_CACHE_DTYPE=fp8   # on GPUs that support it
 ```
+
+Do not lower `GPU_MEMORY_UTILIZATION` to fix this on vLLM 0.34: it leaves
+less memory for the KV cache (see [GPU memory](#gpu-memory)).
 
 For a model that still does not fit, use more GPUs:
 

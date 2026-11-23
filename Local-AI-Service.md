@@ -543,6 +543,10 @@ LORA_SCALED=/path/to/c.gguf:0.5
 a `filters.setParams` block. Embedding models get `LOCALAI_EMBEDDING_TTL`
 (120s default) automatically unless a `models.d` file sets `TTL` explicitly.
 
+An alias must differ from its own model ID and be unique across all models,
+otherwise llama-swap refuses to start. LocalAI skips such an alias with a
+warning; the first model (in file order) keeps a shared alias.
+
 `LORA`/`LORA_SCALED` accept a comma-separated list of adapter paths (plain
 paths for `LORA`, `path:scale` pairs for `LORA_SCALED`) and pass it straight
 through as llama-server's own `--lora`/`--lora-scaled` comma list.
@@ -665,11 +669,18 @@ LOCALAI_PARALLEL=1
 
 CPU mode is useful for compatibility testing, but larger models may be slow.
 
+Before LocalAI 1.9.0, installed CPU backends used the GPU settings by mistake
+(16384 context, two parallel slots). From 1.9.0 the CPU settings above apply.
+If you need the longer context, set `LOCALAI_CTX_SIZE=16384` in
+`~/ai/conf/localai.conf` and run `localai reload`.
+
 ### CUDA
 
 CPU, Vulkan, ROCm, OpenVINO, and SYCL install prebuilt llama.cpp releases.
-LocalAI builds CUDA from source against your installed CUDA Toolkit and GPU
-architecture, so its initial installation takes longer.
+By default LocalAI builds CUDA from source against your installed CUDA Toolkit
+and GPU architecture, so its initial installation takes longer. No CUDA
+Toolkit? Use the [prebuilt CUDA build](#prebuilt-cuda-no-cuda-toolkit)
+instead.
 
 `auto` selects CUDA when the driver and compiler are usable, then Vulkan,
 then CPU. Explicit `cuda` requires CUDA and reports a clear error when its
@@ -723,6 +734,49 @@ Vulkan/ROCm — see [Auto-Tuning](#auto-tuning). Verify a CUDA install with:
 localai version                         # "llama.cpp backend: cuda"
 ```
 
+### Prebuilt CUDA (no CUDA Toolkit)
+
+Since LocalAI 1.9.0 you can use llama.cpp's own prebuilt CUDA build instead of
+compiling. It needs only a working NVIDIA driver; no CUDA Toolkit, compiler,
+or CMake.
+
+| CUDA build | Driver needed |
+| --- | --- |
+| CUDA 13.x | 580 or newer |
+| CUDA 12.x | 570 or newer |
+
+New install:
+
+```bash
+curl -fsSL https://hossbit.github.io/localai/install.sh | LOCALAI_CUDA_BUILD=prebuilt LLAMA_CPP_BACKEND=cuda bash
+```
+
+Existing install: set `LOCALAI_CUDA_BUILD=prebuilt` in
+`~/ai/conf/localai.conf`, then:
+
+```bash
+localai switch cuda   # only if CUDA is not active yet
+localai update        # replaces a source-built CUDA backend with the prebuilt one
+```
+
+How it works:
+
+- LocalAI tries the newest CUDA version your driver supports, and installs it
+  only after it detects your GPU. If that fails, it tries the next one; if
+  none works, your current backend is left unchanged.
+- The first install downloads about 600-800 MB: the llama.cpp build plus the
+  CUDA runtime libraries. Later updates download only the 210 MB llama.cpp
+  build until the CUDA version changes.
+- Updates keep the method your CUDA backend was installed with. Set
+  `LOCALAI_CUDA_BUILD=source` and run `localai update` to go back to compiling.
+- `LOCALAI_CUDA_PREBUILT_VERSION=12.8` forces one CUDA version (it skips the
+  driver check, not the GPU check).
+- With `LOCALAI_CUDA_BUILD=prebuilt`, `auto` also selects CUDA whenever the
+  driver works.
+
+The source build stays the default because it is compiled for your exact GPU
+and toolkit. `localai backend list` shows which method each CUDA backend uses.
+
 ### Switching Backends
 
 Every backend you install stays on disk in its own slot
@@ -751,10 +805,13 @@ localai backend list
 ```
 
 ```text
-    BACKEND    VERSION                SIZE
-*   cuda       10252 (fe2adf0)        209M
-    vulkan     10252 (fe2adf0e7)      90M
+    BACKEND    BUILD        SIZE   DETAILS
+    cpu        b12648       58M
+*   cuda       b12648       861M   prebuilt, CUDA 13.5
+    vulkan     b12648       90M
 ```
+
+For CUDA, DETAILS shows `source build` or `prebuilt, CUDA X.Y`.
 
 Install a backend without switching to it — useful for pre-building CUDA
 ahead of time while staying on your current backend:
@@ -860,7 +917,8 @@ firewall.
 | Service is running but a request fails | Run `localai logs`; confirm the model mode and architecture support |
 | Out-of-memory error | Reduce context, concurrency, or batching; check GPU offload with `localai suggest MODEL_ID` |
 | Long embedding input fails | Split the input or adjust its context and microbatch limits |
-| CUDA installation fails | Check both `nvidia-smi` and `nvcc`; see [CUDA requirements](#cuda) |
+| CUDA installation fails | Check both `nvidia-smi` and `nvcc`; see [CUDA requirements](#cuda). No CUDA Toolkit? Use the [prebuilt CUDA build](#prebuilt-cuda-no-cuda-toolkit) |
+| Shorter context after updating a CPU install | LocalAI 1.9.0 applies the CPU defaults (4096); see [Backend Selection](#backend-selection) |
 | Browser cannot connect | Use the printed service URL; `127.0.0.1` refers to the browser's own computer |
 | Request is unauthorized | Use an active saved API key; keys are displayed only when created or rotated |
 | Changed settings have no effect | Edit the correct model override, run `localai reload`, then check logs |
@@ -1152,7 +1210,7 @@ your hardware and installed dependencies.
 | Start | `localai start` | Starts the service |
 | Stop | `localai stop` | Stops the service |
 | Restart | `localai restart` | Restarts the service |
-| Apply model changes | `localai reload` | Rescans models; restarts only when generated configuration changes |
+| Apply model changes | `localai reload` | Rescans models; restarts a running service only when generated configuration changes. A stopped service stays stopped |
 | Show status | `localai status` | Shows service and connection information |
 | Check API health | `localai check` | Checks process, port, and API model list |
 | Test chat generation | `localai check --chat` | Sends a short request to the first configured chat model |
@@ -1225,9 +1283,9 @@ Use the models dashboard to manage them.
 
 | Action | Example | What happens |
 | --- | --- | --- |
-| List installed backends | `localai backend list` | Shows versions, disk size, and the active backend |
+| List installed backends | `localai backend list` | Shows builds, disk size, how CUDA was installed, and the active backend |
 | Install without switching | `localai backend install cpu` | Adds the CPU backend while keeping the active one |
-| Prepare CUDA | `localai backend install cuda` | Builds CUDA when its requirements are available |
+| Prepare CUDA | `localai backend install cuda` | Builds CUDA, or downloads the [prebuilt build](#prebuilt-cuda-no-cuda-toolkit) when `LOCALAI_CUDA_BUILD=prebuilt` |
 | Switch to CPU | `localai switch cpu` | Activates CPU and restarts the service |
 | Switch to Vulkan | `localai switch vulkan` | Activates Vulkan, installing it first if needed |
 | Switch to CUDA | `localai switch cuda` | Activates CUDA, installing it first if needed |
