@@ -55,7 +55,7 @@ unless changed with `localvllm backend default omni`).
 - A global operation lock that prevents concurrent install/update/start/stop races
 - Staged virtualenv upgrades with verification, `pip check`, and rollback
 - Rotated per-backend logs instead of truncating the previous failure
-- JSON output for `status`, `models`, and `doctor`; Prometheus metrics via `localvllm metrics`
+- JSON output for `status`, `models`, and `doctor`; Prometheus metrics via `localvllm status --metrics`
 - Explicit security refusal for insecure public listeners
 
 ## Requirements
@@ -288,7 +288,7 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 | Command | Purpose |
 | --- | --- |
 | `localvllm` / `localvllm menu` / `localvllm setup` | Open guided model management in a terminal. |
-| `localvllm pull ORG/MODEL [--revision REF]` | Download/register a model without selecting a different active model. |
+| `localvllm add ORG/MODEL [--revision REF]` | Download/register a model without selecting a different active model. |
 | `localvllm add /path/to/model` | Register a complete existing folder without moving or copying it. |
 | `localvllm mode [direct\|swap]` | Show/change the selected backend's serving mode. |
 | `localvllm start [BACKEND\|all]` | Start one or both services; returns once the API answers (see `LOCALVLLM_READY_WAIT`). |
@@ -299,7 +299,7 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 | `localvllm autostart [on\|off\|status] [BACKEND\|all]` | Start services at boot and keep them running after logout. |
 | `localvllm check [--chat] [BACKEND\|all]` | Check `/health`, `/v1/models`, optionally chat. |
 | `localvllm logs [BACKEND]` | Follow one service's current log (previous logs are rotated). |
-| `localvllm metrics [--watch] [BACKEND]` | Show vLLM Prometheus metrics: queue, KV cache, throughput. |
+| `localvllm status --metrics [--watch] [BACKEND]` | Show vLLM Prometheus metrics: queue, KV cache, throughput. |
 | `localvllm models [--json\|--paths] [BACKEND]` | List that backend's models. |
 | `localvllm use MODEL` | Select the model for the current backend. |
 | `localvllm load [MODEL]` | Start/wake the service; in automatic mode, load the requested model. |
@@ -312,7 +312,7 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 | `localvllm backend install NAME` | Install/repair one backend. |
 | `localvllm backend default NAME` | Change the default backend. |
 | `localvllm doctor [--json] [BACKEND\|all]` | Diagnose Python, vLLM, GPU, model, port, keys, pip consistency. An uninstalled backend is a warning under `all`. |
-| `localvllm config check [BACKEND\|all]` | Validate the configuration by generating the launcher in a temporary directory; the installed launcher is not changed. `all` skips backends that are not installed or have no models. |
+| `localvllm doctor --config [BACKEND\|all]` | Validate the configuration by generating the launcher in a temporary directory; the installed launcher is not changed. `all` skips backends that are not installed or have no models. |
 | `localvllm update [--backend NAME] [--all]` | Update the active backend, managed llama-swap and helpers; `--all` updates every installed backend. |
 | `localvllm version [BACKEND\|all]` | Show manager, engine, Python and optional llama-swap versions, paths and serving modes. |
 | `localvllm uninstall` | Remove both backends; models are kept by default. |
@@ -324,6 +324,11 @@ localvllm status --json all
 localvllm models --json
 localvllm doctor --json all
 ```
+
+`localvllm help` shows the common commands; `localvllm help --all` shows every one.
+Older names (`check`, `config check`, `metrics`, `pull`, `rollback`, `setup`,
+`switch`) still work. `doctor --chat` also tests a reply, and
+`update --rollback [BACKEND]` returns to the previous environment.
 
 ### Backend management
 
@@ -403,7 +408,7 @@ LOCALVLLM_LISTEN_HOST=127.0.0.1
 Validate after editing, without touching the running service:
 
 ```bash
-localvllm config check all
+localvllm doctor --config all
 ```
 
 Engine defaults use the `VLLM_` prefix (for example `VLLM_MAX_MODEL_LEN`).
@@ -716,8 +721,8 @@ any compatible client can connect. Direct mode does not install a chat UI.
 vLLM exposes Prometheus metrics. The CLI filters the useful vLLM series:
 
 ```bash
-localvllm metrics vllm
-localvllm metrics --watch omni
+localvllm status --metrics vllm
+localvllm status --metrics --watch omni
 ```
 
 In direct mode this shows request queue depth, running requests, KV-cache usage,

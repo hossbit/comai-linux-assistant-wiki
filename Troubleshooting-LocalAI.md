@@ -16,7 +16,7 @@ LocalAI 1.6.10 returns an error when a model load/unload request fails, or
 when `load all` / `unload all` cannot list models. An unreachable API is no
 longer reported as a successful load or an empty loaded-model list.
 
-Run `localai status`, `localai check`, and `localai logs` to check service,
+Run `localai status`, `localai doctor`, and `localai logs` to check service,
 authentication, and model startup errors. After a model change, run
 `localai reload`. With the default swap policy, `load all` loads models in
 sequence; it does not guarantee they all remain in memory together.
@@ -35,7 +35,7 @@ password when authentication is enabled; `localai key list` cannot reveal it.
 
 ```bash
 localai status
-localai check
+localai doctor
 localai models
 ```
 
@@ -70,11 +70,11 @@ Manual API check:
 curl -s http://127.0.0.1:11435/v1/models | jq -r .data[].id
 ```
 
-`localai check --chat` also round-trips a real chat completion against the
+`localai doctor --chat` also round-trips a real chat completion against the
 first non-embedding model, confirming it actually loads and generates:
 
 ```bash
-localai check --chat
+localai doctor --chat
 ```
 
 ## Configured Model Was Not Found

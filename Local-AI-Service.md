@@ -29,11 +29,12 @@ one-line installer installs `tar` with your package manager.
 
 ### 2. Add a model
 
-Copy a compatible GGUF model into `~/ai/models/`. Use a chat or instruct
+Add a compatible GGUF model: link a file you have, or download one with
+`localai add ORG/REPO:QUANT`. Use a chat or instruct
 model for your first chat request.
 
 ```bash
-cp /path/to/MODEL.gguf ~/ai/models/
+localai add /path/to/MODEL.gguf
 localai reload
 localai start
 localai models
@@ -45,7 +46,7 @@ model ID in the output of `localai models`.
 ### 3. Check and open
 
 ```bash
-localai check --chat
+localai doctor --chat
 localai ui --chat --open
 ```
 
@@ -321,7 +322,7 @@ to also round-trip a real chat completion against the first configured chat
 model, which confirms the model loads and generates:
 
 ```bash
-localai check --chat
+localai doctor --chat
 ```
 
 Manual API check:
@@ -784,7 +785,7 @@ Existing install: set `LOCALAI_CUDA_BUILD=prebuilt` in
 `~/ai/conf/localai.conf`, then:
 
 ```bash
-localai switch cuda   # only if CUDA is not active yet
+localai backend use cuda   # only if CUDA is not active yet
 localai update        # replaces a source-built CUDA backend with the prebuilt one
 ```
 
@@ -813,9 +814,9 @@ Every backend you install stays on disk in its own slot
 away from it, so switching back to one you've used before is instant:
 
 ```bash
-localai switch vulkan
-localai switch cuda
-localai switch auto
+localai backend use vulkan
+localai backend use cuda
+localai backend use auto
 ```
 
 `switch` repoints the active backend and restarts the service — no
@@ -1241,8 +1242,9 @@ your hardware and installed dependencies.
 | Restart | `localai restart` | Restarts the service |
 | Apply model changes | `localai reload` | Rescans models; restarts a running service only when generated configuration changes. A stopped service stays stopped |
 | Show status | `localai status` | Shows service and connection information |
+| Find problems | `localai doctor` | Checks the engine, GPU, models, disk space, autostart and API |
 | Check API health | `localai check` | Checks process, port, and API model list |
-| Test chat generation | `localai check --chat` | Sends a short request to the first configured chat model and asks reasoning models to answer without thinking. An empty reply fails the check |
+| Test chat generation | `localai doctor --chat` | Sends a short request to the first configured chat model and asks reasoning models to answer without thinking. An empty reply fails the check |
 | Follow logs | `localai logs` | Follows `~/ai/logs/llama-swap.log`; press Ctrl+C to stop following. Service start/stop events: `journalctl --user -u localai` |
 | Autostart | `localai autostart on` | Starts LocalAI at boot and keeps it running after logout; `off` and `status` too |
 
@@ -1250,6 +1252,8 @@ your hardware and installed dependencies.
 
 | Action | Example | What happens |
 | --- | --- | --- |
+| Link a local model | `localai add /path/to/MODEL.gguf` | Links a file or folder without copying it |
+| Download a model | `localai add ORG/REPO:Q4_K_M` | Downloads GGUF files from Hugging Face with checksum verification; `ORG/REPO` alone lists them |
 | List models | `localai models` | Shows IDs, model modes, sizes, and loaded state |
 | Get advice for all models | `localai suggest` | Shows hardware and runtime advice |
 | Get advice for one model | `localai suggest MODEL_ID` | Limits advice to that model |
@@ -1316,10 +1320,10 @@ Use the models dashboard to manage them.
 | List installed backends | `localai backend list` | Shows builds, disk size, how CUDA was installed, and the active backend |
 | Install without switching | `localai backend install cpu` | Adds the CPU backend while keeping the active one |
 | Prepare CUDA | `localai backend install cuda` | Builds CUDA, or downloads the [prebuilt build](#prebuilt-cuda-no-cuda-toolkit) when `LOCALAI_CUDA_BUILD=prebuilt` |
-| Switch to CPU | `localai switch cpu` | Activates CPU and restarts the service |
-| Switch to Vulkan | `localai switch vulkan` | Activates Vulkan, installing it first if needed |
-| Switch to CUDA | `localai switch cuda` | Activates CUDA, installing it first if needed |
-| Choose automatically | `localai switch auto` | Selects a usable backend |
+| Switch to CPU | `localai backend use cpu` | Activates CPU and restarts the service |
+| Switch to Vulkan | `localai backend use vulkan` | Activates Vulkan, installing it first if needed |
+| Switch to CUDA | `localai backend use cuda` | Activates CUDA, installing it first if needed |
+| Choose automatically | `localai backend use auto` | Selects a usable backend |
 | Show backend help | `localai backend help` | Lists backend commands and supported names |
 | Update active backend and components | `localai update` | Updates active llama.cpp, llama-swap, and helpers |
 | Update every installed backend | `localai update --all` | Updates every backend without changing which is active |
@@ -1327,7 +1331,7 @@ Use the models dashboard to manage them.
 | Update all and leave stopped | `localai update --all --no-start` | Combines both update options |
 
 To use another supported backend, replace the name in
-`localai backend install cpu` or `localai switch cpu`.
+`localai backend install cpu` or `localai backend use cpu`.
 
 ### API Keys
 

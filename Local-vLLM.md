@@ -42,7 +42,7 @@ The menu lists your models and lets you download a model, add a folder, start
 or stop serving, and open the web interface. Choose **b** to manage vLLM or
 Omni; both have the same workflow and separate model lists. If an engine is
 missing, the menu offers to install it. Choose a compatible model that fits
-your hardware. Use `localvllm menu` for management; `localvllm setup` is the separate first-configuration guide.
+your hardware. Use `localvllm menu` for the guided first setup and later management.
 
 The default installation directory is `~/ai-vllm`. If `localvllm` is not found,
 open a new terminal or add `~/.local/bin` to your `PATH`.
@@ -106,7 +106,7 @@ when `--backend` is omitted, not a claim that its service is running.
 
 ### Guided configuration
 
-Run `localvllm setup` in a terminal. It asks for an engine, serving method and
+Run `localvllm menu` in a terminal and accept the guided setup. It asks for an engine, serving method and
 model source (download, own folder, or registered model). It previews the plan
 before applying it; the final successful step saves the selected backend as
 your default. Engine installation has a separate prompt when needed. Setup leaves
@@ -124,7 +124,7 @@ Every command works without setup. Examples below use the vLLM backend; replace
 Direct/manual:
 
 ```bash
-localvllm --backend vllm pull ORG/MODEL
+localvllm --backend vllm add ORG/MODEL
 localvllm --backend vllm use ORG/MODEL
 localvllm --backend vllm mode direct
 localvllm --backend vllm start
@@ -134,13 +134,13 @@ localvllm --backend vllm status
 Automatic switching:
 
 ```bash
-localvllm --backend vllm pull ORG/MODEL
+localvllm --backend vllm add ORG/MODEL
 localvllm --backend vllm mode swap
 localvllm --backend vllm start
 localvllm --backend vllm status
 ```
 
-For your own model folder, replace `pull ORG/MODEL` with `add /path/to/model` and
+For your own model folder, replace `add ORG/MODEL` with `add /path/to/model` and
 select its registered folder name using `use MODEL` in direct mode. Adding a
 model to a running router does not interrupt it; `reload` applies changes when
 ready and may restart the service. To persist a default, run
@@ -200,10 +200,10 @@ Logs are local; review upstream messages for private paths/URLs before sharing.
 ### Useful metrics
 
 ```bash
-localvllm metrics
-localvllm metrics --watch
+localvllm status --metrics
+localvllm status --metrics --watch
 localvllm --backend omni metrics
-localvllm metrics --raw
+localvllm status --metrics --raw
 ```
 
 The readable view shows running/waiting requests, peak KV cache usage across
@@ -320,7 +320,7 @@ connection to resume. Never put a token in an issue or log you share.
 
 ## Apply or remove registrations
 
-`pull` and `add` preserve the running service. In automatic mode, apply new
+`add` preserves the running service. In automatic mode, apply new
 registrations using the menu's **c** action or `localvllm reload` when ready.
 Applying a changed launcher may restart the backend and interrupt requests.
 A failed application restores the previous launcher and attempts service recovery.
@@ -337,7 +337,7 @@ The simplest way is the menu. For direct commands, download without changing
 the running model, then select it:
 
 ```bash
-localvllm pull org/model-name
+localvllm add org/model-name
 localvllm use org/model-name
 localvllm start
 ```
@@ -406,7 +406,7 @@ prints the configured locations.
 
 ```bash
 localvllm                       # Guided model management
-localvllm pull ORG/MODEL        # Download/register without selecting it
+localvllm add ORG/MODEL        # Download/register without selecting it
 localvllm add /path/to/model    # Register an existing complete folder
 localvllm mode                 # Show the serving mode
 localvllm status                # Server status
