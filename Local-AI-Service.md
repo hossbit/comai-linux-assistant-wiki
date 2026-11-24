@@ -16,11 +16,16 @@ vision and audio models may need a matching projector.
 curl -fsSL https://hossbit.github.io/localai/install.sh | bash
 ```
 
-The default backend is Vulkan. For CPU-only systems, use:
+The default backend is Vulkan. On a machine where llama.cpp finds no GPU, the
+installer uses the CPU backend instead (LocalAI 1.10.0 and newer). To choose
+CPU explicitly:
 
 ```bash
 curl -fsSL https://hossbit.github.io/localai/install.sh | LLAMA_CPP_BACKEND=cpu bash
 ```
+
+Minimal server images without `git` or `tar` need no preparation: the
+one-line installer installs `tar` with your package manager.
 
 ### 2. Add a model
 
@@ -169,6 +174,14 @@ Place GGUF files under the LocalAI models directory:
 ~/ai/models
 ```
 
+Models on another disk can stay there. Since LocalAI 1.10.0 a symlink to a
+`.gguf` file or to a model folder is discovered like the real thing, and so is
+a symlinked `~/ai/models` directory. Broken links are ignored.
+
+```bash
+ln -s /data/models/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf ~/ai/models/
+```
+
 Example with an existing file:
 
 ```bash
@@ -279,11 +292,21 @@ systemctl --user stop localai
 systemctl --user restart localai
 ```
 
-Start LocalAI automatically when you log in:
+Start LocalAI at boot and keep it running after you log out:
 
 ```bash
-systemctl --user enable --now localai
+localai autostart on
+localai start
 ```
+
+LocalAI runs as a systemd *user* service. Without lingering, systemd stops a
+user's services when their last session ends, so on a server you reach over SSH
+the API goes away when you disconnect, and an enabled service only starts once
+you log in again. `localai autostart on` enables the service and turns on
+lingering for your user (`loginctl enable-linger`, using sudo when polkit does
+not allow it). `localai autostart status` shows both settings;
+`localai autostart off` disables the service and leaves lingering on, because
+other user services may rely on it.
 
 ## Check Status
 
@@ -657,6 +680,12 @@ backend.
 
 If a non-CPU backend installs but cannot run on the system, LocalAI retries once
 with the CPU backend by default.
+
+Since LocalAI 1.10.0 the default (or `auto`) Vulkan choice also switches to the
+CPU backend when `llama-server --list-devices` lists no GPU. A Vulkan loader
+with only a software driver (Mesa's lavapipe) is enough for Vulkan to install,
+but llama.cpp then runs on the CPU with the GPU settings. An explicit
+`LLAMA_CPP_BACKEND=vulkan` keeps Vulkan.
 
 CPU installs use conservative runtime settings:
 
@@ -1213,8 +1242,9 @@ your hardware and installed dependencies.
 | Apply model changes | `localai reload` | Rescans models; restarts a running service only when generated configuration changes. A stopped service stays stopped |
 | Show status | `localai status` | Shows service and connection information |
 | Check API health | `localai check` | Checks process, port, and API model list |
-| Test chat generation | `localai check --chat` | Sends a short request to the first configured chat model |
-| Follow logs | `localai logs` | Shows live logs; press Ctrl+C to stop following |
+| Test chat generation | `localai check --chat` | Sends a short request to the first configured chat model and asks reasoning models to answer without thinking. An empty reply fails the check |
+| Follow logs | `localai logs` | Follows `~/ai/logs/llama-swap.log`; press Ctrl+C to stop following. Service start/stop events: `journalctl --user -u localai` |
+| Autostart | `localai autostart on` | Starts LocalAI at boot and keeps it running after logout; `off` and `status` too |
 
 ### Models
 

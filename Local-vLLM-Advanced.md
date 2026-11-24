@@ -120,6 +120,17 @@ If the command is not found in the current terminal, run
 `source ~/.bashrc` (or open a new terminal); the installer adds
 `~/.local/bin` to PATH when needed.
 
+A new environment needs about 15-17 GB (PyTorch, vLLM, CUDA libraries and
+FlashInfer kernels). The installer stops before creating one when less than
+`LOCALVLLM_INSTALL_MIN_FREE_GB` (default 20) GB are free next to the venv; set
+it to `0` to skip the check. pip's download cache is not kept
+(`PIP_NO_CACHE_DIR=1`), which saves several GB in `~/.cache/pip`; set
+`LOCALVLLM_PIP_CACHE=1` to keep it.
+
+The one-line installer installs the latest release, falling back to the
+release it shipped with when the GitHub API cannot be reached, and installs
+`tar` on minimal images that have neither `git` nor `tar`.
+
 ### AMD and CPU installation
 
 These paths are advanced and depend on upstream vLLM wheels, hardware, Python,
@@ -165,8 +176,10 @@ packages in one pip transaction; the indices and versions must work together.
 
 CPU inference is experimental in this manager and can be slow. `VLLM_ALLOW_CPU=1`
 only bypasses the manager's no-GPU check; `VLLM_TARGET_DEVICE=cpu` selects the
-CPU target. Neither setting guarantees that pip installs a CPU-compatible
-vLLM build. Follow the [vLLM CPU installation guide](https://docs.vllm.ai/en/latest/getting_started/installation/cpu/)
+CPU target. Neither setting makes pip install a CPU-compatible vLLM build, so
+since Local vLLM 1.5.0 a CPU install without `VLLM_PIP_ARGS` stops before
+downloading anything: the default PyPI wheel is the CUDA build, several GB of
+NVIDIA libraries that cannot run on a CPU. Follow the [vLLM CPU installation guide](https://docs.vllm.ai/en/latest/getting_started/installation/cpu/)
 for your architecture to determine whether compatible packages are available
 or a source build is required.
 
@@ -283,6 +296,7 @@ Discovering a `.gguf` file here does not guarantee that it can be served.
 | `localvllm restart [BACKEND\|all]` | Restart services. |
 | `localvllm reload [BACKEND\|all]` | Rescan models; restart only if a launcher changed. |
 | `localvllm status [--json] [BACKEND\|all]` | Show service, process, model, port, and API status. |
+| `localvllm autostart [on\|off\|status] [BACKEND\|all]` | Start services at boot and keep them running after logout. |
 | `localvllm check [--chat] [BACKEND\|all]` | Check `/health`, `/v1/models`, optionally chat. |
 | `localvllm logs [BACKEND]` | Follow one service's current log (previous logs are rotated). |
 | `localvllm metrics [--watch] [BACKEND]` | Show vLLM Prometheus metrics: queue, KV cache, throughput. |
@@ -423,6 +437,13 @@ Under systemd each backend runs as a `Type=simple` unit with
 900). Set `LOCALVLLM_READY_WAIT=0` to return as soon as systemd has started the
 unit. Updates use the same wait, so a model that fails to load is reported
 before the update is considered complete.
+
+The services are systemd *user* units. Without lingering, systemd stops them
+when your last session ends (for example when you disconnect from SSH) and does
+not start them at boot. `localvllm autostart on [vllm|omni|all]` enables the
+selected services and turns on lingering for your user (using sudo when polkit
+does not allow it); `autostart status` and `autostart off` work the same way.
+`off` leaves lingering on because other user services may rely on it.
 
 ### Backend profiles
 
